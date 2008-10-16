@@ -41,6 +41,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
 import javax.el.ELException;
@@ -235,5 +236,52 @@ public class ReflectionUtil {
         }
         throw new PropertyNotFoundException(MessageFactory.get(
                 "error.property.notfound", base, name));
+    }
+
+    /*
+     * For now, find the first method that matches the name and the parameter
+     * count.
+     */
+    public static Method findMethod(Object base, Object property,
+                             Object[] params) throws ELException {
+
+        String methodName = property.toString();
+        for (Method m: base.getClass().getMethods()) {
+            if (m.getName().equals(methodName) && (
+                         m.isVarArgs() ||
+                         m.getParameterTypes().length==params.length)){
+                return m;
+            }
+        }
+        throw new ELException("Method " + methodName + " not Found");
+    }
+        
+    /**
+     * Invoke a method with parameters.
+     */
+    public static Object invokeMethod(Object base, Object property,
+                               Object[] params) throws ELException {
+
+        Method m = findMethod(base, property, params);
+        Class[] parameterTypes = m.getParameterTypes();
+        Object[] parameters = null;
+        if (parameterTypes.length > 0) {
+            if (m.isVarArgs()) {
+                // TODO
+            } else {
+                parameters = new Object[parameterTypes.length];
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    parameters[i] = ELSupport.coerceToType(params[i],
+                                                           parameterTypes[i]);
+                }
+            }
+        }
+        try {
+            return m.invoke(base, parameters);
+        } catch (IllegalAccessException iae) {
+            throw new ELException(iae);
+        } catch (InvocationTargetException ite) {
+            throw new ELException(ite.getCause());
+        }
     }
 }
