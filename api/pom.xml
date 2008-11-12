@@ -40,14 +40,14 @@
     <parent>
         <groupId>org.glassfish.web</groupId>
         <artifactId>el</artifactId>    
-        <version>1.1</version>
+        <version>1.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>javax.el</groupId>
     <artifactId>el-api</artifactId>
     <packaging>jar</packaging>
-    <version>1.1</version>
-    <name>Expression Language API</name>
+    <version>${el-api.version}</version>
+    <name>Expression Language API (2.1 Maintenance Release)</name>
     <developers>
         <developer>
             <id>kchung</id>
@@ -74,11 +74,11 @@
                         <configuration>
                             <groups>
                                 <group>
-                                    <title>JavaServer Pages(TM) Standard Tag Library API Documentation</title>
+                                    <title>Expresion Language API Documentation</title>
                                     <packages>javax.el</packages>
                                 </group>
                             </groups>
-                            <bottom>&lt;font size="-1"&gt;Copyright 2003 Sun Microsystems, Inc. All Rights Reserved.&lt;/font&gt;</bottom>
+                            <bottom>&lt;font size="-1"&gt;Copyright 2008 Sun Microsystems, Inc. All Rights Reserved.&lt;/font&gt;</bottom>
                         </configuration>
                     </execution>
                 </executions>

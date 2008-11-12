@@ -211,6 +211,10 @@ public abstract class SimpleNode extends ELSupport implements Node {
         return true;
     }
 
+    public boolean isParametersProvided() {
+        return false;
+    }
+
     @Override
     public int hashCode() {
         if (this.children == null || this.children.length == 0) {

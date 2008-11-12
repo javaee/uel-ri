@@ -59,7 +59,15 @@ public class AstMethodSuffix extends SimpleNode {
         super(id);
     }
 
-    private Object[] getParameters(EvaluationContext ctx) throws ELException {
+    String getMethodName() {
+        return this.image;
+    }
+
+    Class<?>[] getParamTypes () {
+        return null;
+    }
+
+    Object[] getParameters(EvaluationContext ctx) throws ELException {
 
         if (this.children == null)
             return new Object[] {};
@@ -71,28 +79,9 @@ public class AstMethodSuffix extends SimpleNode {
         return obj;
     }
 
-    public MethodInfo getMethodInfo(Object base, EvaluationContext ctx)
-            throws ELException {
-
-        Method m = ReflectionUtil.findMethod(base, this.image,
-                                             this.getParameters(ctx));
-        return new MethodInfo(m.getName(), m.getReturnType(),
-                              m.getParameterTypes());
+    @Override
+    public boolean isParametersProvided() {
+        return true;
     }
-
-    public Class getType(Object base, EvaluationContext ctx)
-            throws ELException {
-
-        Method m = ReflectionUtil.findMethod(base, this.image,
-                        this.getParameters(ctx));
-        return m.getReturnType();
-    }
-
-    public Object getValue(Object base, EvaluationContext ctx)
-            throws ELException {
-        return ReflectionUtil.invokeMethod(base, this.image,
-                    this.getParameters(ctx));
-    }
-
 }
 /* JavaCC - OriginalChecksum=37373bbb222817267c57462c5dc01781 (do not edit this line) */

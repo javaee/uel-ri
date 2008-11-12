@@ -87,4 +87,5 @@ public interface Node {
 
   public boolean equals(Object n);
   public int hashCode();
+  public boolean isParametersProvided();
 }

@@ -1,0 +1,17 @@
+<!-- Use ant to generate .jj and .java files.  Use mvn for build. -->
+
+<project name="el-impl" default="generate" basedir=".">
+
+    <property name="javacc.home" value="/z/tools/javacc-4.1/"/>
+    <property name="dir" value="src/main/java/com/sun/el/parser"/>
+
+    <target name="generate" description="Generate java files">
+
+        <jjtree target="${dir}/ELParser.jjt"
+                outputdirectory="${dir}"
+                javacchome="${javacc.home}"/>
+        <javacc target="${dir}/ELParser.jj"
+                outputdirectory="${dir}"
+                javacchome="${javacc.home}"/>
+    </target>
+</project>

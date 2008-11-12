@@ -5,7 +5,7 @@ he.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.web</groupId>
     <artifactId>el</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <packaging>pom</packaging>
     <name>Expression Language related modules</name>
 
@@ -58,6 +58,11 @@ he.org/maven-v4_0_0.xsd">
             <url>java-net:/maven2-repository/trunk/www/repository/</url>
         </repository>
     </distributionManagement>
+
+    <properties>
+        <el-api.version>2.1.2-SNAPSHOT</el-api.version>
+        <el-impl.version>2.1.2-SNAPSHOT</el-impl.version>
+    </properties>
 
     <modules>
         <module>api</module>

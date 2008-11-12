@@ -75,10 +75,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * component architecture.
  *
  * <p>This resolver handles base objects of any type, as long as the
- * base is not <code>null</code>. It accepts any object as a property, and
- * coerces it to a string. That string is then used to find a JavaBeans
- * compliant property on the base object. The value is accessed using
- * JavaBeans getters and setters.</p>
+ * base is not <code>null</code>. It accepts any object as a property
+ * or method, and coerces it to a string.
+ *
+ * <p>For property resolution, the
+ * property string is used to find a JavaBeans compliant property on
+ * the base object. The value is accessed using JavaBeans getters and setters.
+ * </p>
+ *
+ * <p>For method resolution, the method string is the name
+ * of the method in the bean.  The parameter types can be optionally
+ * specified to identify the method.  If the parameter types are not
+ * specified, the parameter objects are used in the method resolution.
+ * </p>
  * 
  * <p>This resolver can be constructed in read-only mode, which means that
  * {@link #isReadOnly} will always return <code>true</code> and 
@@ -388,6 +397,78 @@ public class BeanELResolver extends ELResolver {
     }
 
     /**
+     * If the base object is not <code>null</code>, invoke the method, with
+     * the given parameters on this bean.  The return value from the method
+     * is returned.
+     *
+     * <p>If the base is not <code>null</code>, the
+     * <code>propertyResolved</code> property of the <code>ELContext</code>
+     * object must be set to <code>true</code> by this resolver, before
+     * returning. If this property is not <code>true</code> after this
+     * method is called, the caller should ignore the return value.</p>
+     *
+     * <p>The provided method object will first be coerced to a
+     * <code>String</code>.  The methods in the bean is then examined and 
+     * an attempt will be made to selct one for invocation.  If no suitable
+     * can be found, a <code>MethodNotFoundException</code> is thrown.
+     *
+     * If the given paramTypes is not <code>null</code>, select the method
+     * with the given name and parameter types.
+     *
+     * Else select the method with the given name that has the same number
+     * of parameters.  If there are more than one such method, the method
+     * selection process is undefined.
+     *
+     * Else select the method with the given name that takes a variable
+     * number of arguments.
+     *
+     * Note the resolution for overloaded methods will likely be clarified
+     * in a future version of the spec.
+     *
+     * The provide parameters are coerced to the correcponding parameter
+     * types of the method, and the method is then invoked.
+     *
+     * @param context The context of this evaluation.
+     * @param base The bean on which to invoke the method
+     * @param method The simple name of the method to invoke.
+     *     Will be coerced to a <code>String</code>.  If method is
+     *     "&lt;init&gt;"or "&lt;clinit&gt;" a MethodNotFoundException is
+     *     thrown.
+     * @param paramTypes An array of Class objects identifying the
+     *     method's formal parameter types, in declared order.
+     *     Use an empty array if the method has no parameters.
+     *     Can be <code>null</code>, in which case the method's formal
+     *     parameter types are assumed to be unknown.
+     * @param params The parameters to pass to the method, or
+     *     <code>null</code> if no parameters.
+     * @return The result of the method invocation (<code>null</code> if
+     *     the method has a <code>void</code> return type).
+     * @throws MethodNotFoundException if no suitable method can be found.
+     * @throws ELException if an exception was thrown while performing
+     *     (base, method) resolution.  The thrown exception must be
+     *     included as the cause property of this exception, if
+     *     available.  If the exception thrown is an
+     *     <code>InvocationTargetException</code>, extract its
+     *     <code>cause</code> and pass it to the
+     *     <code>ELException</code> constructor.
+     */
+
+    public Object invoke(ELContext context,
+                         Object base,
+                         Object method,
+                         Class<?>[] paramTypes,
+                         Object[] params) {
+
+        if (base == null || method == null) {
+            return null;
+        }
+        Method m = findMethod(base, method.toString(), paramTypes, params);
+        Object ret = invokeMethod(m, base, params);
+        context.setPropertyResolved(true);
+        return ret;
+    }
+
+    /**
      * If the base object is not <code>null</code>, returns whether a call
      * to {@link #setValue} will always fail.
      *
@@ -610,6 +691,52 @@ public class BeanELResolver extends ELResolver {
      */
     private void purgeBeanClasses(ClassLoader classloader) {
         removeFromMap(properties, classloader);
+    }
+
+    private Method findMethod(Object base, String method,
+                              Class<?>[] paramTypes, Object[] params) {
+
+        Class<?>beanClass = base.getClass();
+        if (paramTypes != null) {
+            try {
+                return beanClass.getMethod(method, paramTypes);
+            } catch (java.lang.NoSuchMethodException ex) {
+                throw new MethodNotFoundException(ex);
+            }
+        }
+        for (Method m: base.getClass().getMethods()) {
+            if (m.getName().equals(method) && (
+                         m.isVarArgs() ||
+                         m.getParameterTypes().length==params.length)){
+                return m;
+            }
+        }
+        throw new MethodNotFoundException("Method " + method + " not found");
+    }
+
+    private Object invokeMethod(Method m, Object base, Object[] params) {
+
+        Class[] parameterTypes = m.getParameterTypes();
+        Object[] parameters = null;
+        if (parameterTypes.length > 0) {
+            ExpressionFactory exprFactory = ExpressionFactory.newInstance();
+            if (m.isVarArgs()) {
+                // TODO
+            } else {
+                parameters = new Object[parameterTypes.length];
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    parameters[i] = exprFactory.coerceToType(params[i],
+                                                           parameterTypes[i]);
+                }
+            }
+        }
+        try {
+            return m.invoke(base, parameters);
+        } catch (IllegalAccessException iae) {
+            throw new ELException(iae);
+        } catch (InvocationTargetException ite) {
+            throw new ELException(ite.getCause());
+        }
     }
 }
 

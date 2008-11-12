@@ -107,15 +107,13 @@ public interface ELParserConstants {
   /** RegularExpression Id. */
   int IDENTIFIER = 53;
   /** RegularExpression Id. */
-  int FUNCTIONSUFFIX = 54;
+  int IMPL_OBJ_START = 54;
   /** RegularExpression Id. */
-  int IMPL_OBJ_START = 55;
+  int LETTER = 55;
   /** RegularExpression Id. */
-  int LETTER = 56;
+  int DIGIT = 56;
   /** RegularExpression Id. */
-  int DIGIT = 57;
-  /** RegularExpression Id. */
-  int ILLEGAL_CHARACTER = 58;
+  int ILLEGAL_CHARACTER = 57;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -178,7 +176,6 @@ public interface ELParserConstants {
     "\"%\"",
     "\"mod\"",
     "<IDENTIFIER>",
-    "<FUNCTIONSUFFIX>",
     "\"#\"",
     "<LETTER>",
     "<DIGIT>",

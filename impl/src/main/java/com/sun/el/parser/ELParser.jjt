@@ -87,7 +87,7 @@ void Expression() : {}
  */
 void Choice() : {}
 {
-	Or() (<QUESTIONMARK> Or() <COLON> Choice() #Choice(3))*
+	Or() (<QUESTIONMARK> Choice() <COLON> Choice() #Choice(3))*
 }
 
 /*
@@ -260,7 +260,7 @@ void BracketSuffix() #BracketSuffix : {}
 void NonLiteral() : {}
 {
  	<LPAREN> Expression() <RPAREN>
- 	| LOOKAHEAD(2) Function()
+ 	| LOOKAHEAD(4) Function()
 	| Identifier()
 }
 
@@ -283,11 +283,11 @@ void Function() #Function :
 	Token t1 = null;
 }
 {
-	t0=<IDENTIFIER> (t1=<FUNCTIONSUFFIX>)?
+	t0=<IDENTIFIER> (<COLON> t1=<IDENTIFIER>)?
 	{
 		if (t1 != null) {
 			jjtThis.setPrefix(t0.image);
-			jjtThis.setLocalName(t1.image.substring(1));
+			jjtThis.setLocalName(t1.image);
 		} else {
 			jjtThis.setLocalName(t0.image);
 		}
@@ -434,7 +434,6 @@ void Null() #Null : {}
 |	< MOD0 : "%" >
 |	< MOD1 : "mod" >
 |	< IDENTIFIER : (<LETTER>|<IMPL_OBJ_START>) (<LETTER>|<DIGIT>)* >
-|	< FUNCTIONSUFFIX : (<COLON> <IDENTIFIER>)  >
 |	< #IMPL_OBJ_START: "#" >
 |	< #LETTER:
 		[

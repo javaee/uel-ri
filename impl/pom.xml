@@ -42,10 +42,10 @@
     <parent>
         <groupId>org.glassfish.web</groupId>
         <artifactId>el</artifactId>
-        <version>1.1</version>
+        <version>1.2</version>
     </parent>
     <artifactId>el-impl</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>${el-impl.version}</version>
     <packaging>jar</packaging>
     <name>Expression Language Implementation</name>
 
@@ -141,18 +141,10 @@
         </pluginRepository>
     </pluginRepositories>
     <dependencies>
-<!--
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-        </dependency>
--->
-        <dependency>
-             <!-- TODO: should just use el-api -->
-            <groupId>javax.servlet.jsp</groupId>
-            <artifactId>jsp-api</artifactId>
-            <version>2.1</version>
+            <groupId>javax.el</groupId>
+            <artifactId>el-api</artifactId>
+            <version>${el-api.version}</version>
         </dependency>
     </dependencies>
     <distributionManagement>

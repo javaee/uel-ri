@@ -74,7 +74,7 @@ public final class AstValue extends SimpleNode {
     public Class getType(EvaluationContext ctx) throws ELException {
         Target t = getTarget(ctx);
         if (t.suffixNode instanceof AstMethodSuffix) {
-            return ((AstMethodSuffix)t.suffixNode).getType(t.base, ctx);
+            return null;
         }
         Object property = t.suffixNode.getValue(ctx);
         ctx.setPropertyResolved(false);
@@ -89,13 +89,20 @@ public final class AstValue extends SimpleNode {
             throws ELException {
 
         Object value = null;
+        ELResolver resolver = ctx.getELResolver();
         if (child instanceof AstMethodSuffix) {
-            value = ((AstMethodSuffix)child).getValue(base, ctx);
+            AstMethodSuffix methodSuffix = (AstMethodSuffix)child;
+            String method = methodSuffix.getMethodName();
+            Class<?>[] paramTypes = methodSuffix.getParamTypes();
+            Object[] params = methodSuffix.getParameters(ctx);
+
+            ctx.setPropertyResolved(false);
+            value = resolver.invoke(ctx, base, method, paramTypes, params);
         } else {
             Object property = child.getValue(ctx);
             if (property != null) {
                 ctx.setPropertyResolved(false);
-                value = ctx.getELResolver().getValue(ctx, base, property);
+                value = resolver.getValue(ctx, base, property);
                 if (! ctx.isPropertyResolved()) {
                     ELSupport.throwUnhandled(base, property);
                 }
@@ -140,7 +147,6 @@ public final class AstValue extends SimpleNode {
         Object base = this.children[0].getValue(ctx);
         int propCount = this.jjtGetNumChildren();
         int i = 1;
-        Object property = null;
         ELResolver resolver = ctx.getELResolver();
         while (base != null && i < propCount) {
             base = getValue(base, this.children[i], ctx);
@@ -187,7 +193,7 @@ public final class AstValue extends SimpleNode {
             throws ELException {
         Target t = getTarget(ctx);
         if (t.suffixNode instanceof AstMethodSuffix) {
-            return ((AstMethodSuffix)t.suffixNode).getMethodInfo(t.base, ctx);
+            return null;
         }
         Object property = t.suffixNode.getValue(ctx);
         Method m = ReflectionUtil.getMethod(t.base, property, paramTypes);
@@ -199,7 +205,16 @@ public final class AstValue extends SimpleNode {
             Object[] paramValues) throws ELException {
         Target t = getTarget(ctx);
         if (t.suffixNode instanceof AstMethodSuffix) {
-            return ((AstMethodSuffix)t.suffixNode).getValue(t.base, ctx);
+            AstMethodSuffix methodSuffix = (AstMethodSuffix)t.suffixNode;
+            if (methodSuffix.getParamTypes() != null) {
+                paramTypes = methodSuffix.getParamTypes();
+            }
+            Object[] params = methodSuffix.getParameters(ctx);
+            String method = methodSuffix.getMethodName();
+
+            ctx.setPropertyResolved(false);
+            ELResolver resolver = ctx.getELResolver();
+            return resolver.invoke(ctx, t.base, method, paramTypes, params);
         }
         Object property = t.suffixNode.getValue(ctx);
         Method m = ReflectionUtil.getMethod(t.base, property, paramTypes);

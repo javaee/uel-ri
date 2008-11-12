@@ -59,15 +59,13 @@ import java.util.Iterator;
 import java.beans.FeatureDescriptor;
 
 /**
- * Enables customization of variable and property resolution behavior for EL
- * expression evaluation.
+ * Enables customization of variable, property and method call resolution
+ * behavior for EL expression evaluation.
  *
  * <p>While evaluating an expression, the <code>ELResolver</code> associated
  * with the {@link ELContext} is consulted to do the initial resolution of 
  * the first variable of an expression. It is also consulted when a 
- * <code>.</code> or <code>[]</code> operator is encountered, except for the
- * last such operator in a method expression, in which case the resultion
- * rules are hard coded.</p>
+ * <code>.</code> or <code>[]</code> operator is encountered.
  *
  * <p>For example, in the EL expression <code>${employee.lastName}</code>, 
  * the <code>ELResolver</code> determines what object <code>employee</code>
@@ -92,6 +90,14 @@ import java.beans.FeatureDescriptor;
  * <code>${y[x]}</code>, <code>base</code> is the result of the variable
  * resolution for <code>y</code> and <code>property</code> is the result of
  * the variable resolution for <code>x</code>.</p>
+ *
+ * <p>In the case of method call resolution, the <code>base</code> parameter
+ * indentifies the base object and the <code>method</code> parameter identifies
+ * a method on that base.  In the case of overloaded methods, the <code>
+ * paramTypes</code> parameter can be optionally used to identify a method.
+ * The <code>params</code>parameter are the parameters for the method call,
+ * and can also be used for resolving overloaded methods when the
+ * <code>paramTypes</code> parameter is not specified.
  *
  * <p>Though only a single <code>ELResolver</code> is associated with an
  * <code>ELContext</code>, there are usually multiple resolvers considered
@@ -171,6 +177,51 @@ public abstract class ELResolver {
     public abstract Object getValue(ELContext context,
                                     Object base,
                                     Object property);
+
+    /**
+     * Attemps to resolve and invoke the given <code>method</code> on the given
+     * <code>base</code> object.
+     *
+     * <p>If this resolver handles the given (base, method) pair,
+     * the <code>propertyResolved</code> property of the
+     * <code>ELContext</code> object must be set to <code>true</code>
+     * by the resolver, before returning. If this property is not
+     * <code>true</code> after this method is called, the caller should ignore
+     * the return value.</p>
+     *
+     * <p>A default implementation is provided that returns null so that
+     * existing classes that extend ELResolver can continue to function.</p>
+     *
+     * @param context The context of this evaluation.
+     * @param base The bean on which to invoke the method
+     * @param method The simple name of the method to invoke.
+     *     Will be coerced to a <code>String</code>.
+     * @param paramTypes An array of Class objects identifying the
+     *     method's formal parameter types, in declared order.
+     *     Use an empty array if the method has no parameters.
+     *     Can be <code>null</code>, in which case the method's formal
+     *     parameter types are assumed to be unknown. 
+     * @param params The parameters to pass to the method, or
+     *     <code>null</code> if no parameters.
+     * @return The result of the method invocation (<code>null</code> if
+     *     the method has a <code>void</code> return type).
+     * @throws MethodNotFoundException if no suitable method can be found.
+     * @throws ELException if an exception was thrown while performing
+     *     (base, method) resolution.  The thrown exception must be
+     *     included as the cause property of this exception, if
+     *     available.  If the exception thrown is an
+     *     <code>InvocationTargetException</code>, extract its
+     *     <code>cause</code> and pass it to the
+     *     <code>ELException</code> constructor.
+     */
+    public Object invoke(ELContext context,
+                         Object base,
+                         Object method,
+                         Class<?>[] paramTypes,
+                         Object[] params) {
+        return null;
+    }
+
 
     /**
      * For a given <code>base</code> and <code>property</code>, attempts to

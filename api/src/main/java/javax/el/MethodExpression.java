@@ -126,7 +126,7 @@ public abstract class MethodExpression extends Expression
      * the method invocation.
      *
      * Any parameters passed to this method is ignored if isLiteralText()
-     * is true.
+     * or isParametersProvided() is true.
      *
      * @param context The context of this evaluation.
      * @param params The parameters to pass to the method, or
@@ -152,4 +152,18 @@ public abstract class MethodExpression extends Expression
      *     <code>ELException</code> constructor.
      */
     public abstract Object invoke(ELContext context, Object[] params);
+
+    /**
+     * Return whether this MethodExpression was created with parameters.
+     *
+     * <p>This method must return <code>true</code> if and only if
+     * parameters are specified in the EL, using the
+     * expr-a.expr-b(...) syntax.</p>
+     *
+     * @return <code>true</code> if the MethodExpression was created with
+     *    parameters, <code>false</code> otherwise.
+     */
+    public boolean isParmetersProvided() {
+        return false;
+    }
 }
