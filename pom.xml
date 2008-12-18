@@ -26,6 +26,11 @@ he.org/maven-v4_0_0.xsd">
             </extension>
         </extensions>
     </build>
+    <scm>
+        <connection>scm:svn:https://uel.dev.java.net/svn/uel/trunk</connection>
+        <developerConnection>scm:svn:https://uel.dev.java.net/svn/uel/trunk</developerConnection>
+        <url>https://uel.dev.java.net/source/browse/uel/trunk/</url>
+    </scm>
     <repositories>
         <repository>
             <id>glassfish-repository</id>
