@@ -75,18 +75,23 @@ package javax.el;
  * so one is not needed to evaluate an expression using this class.  
  * However, the {@link ELContext} is needed at evaluation time.</p>
  *
- * <p>The {@link #getValue}, {@link #setValue}, {@link #isReadOnly} and
- * {@link #getType} methods will evaluate the expression each time they are
+ * <p>The {@link #getValue}, {@link #setValue}, {@link #isReadOnly},
+ * {@link #getType} and {@link #getValueReference}
+ * methods will evaluate the expression each time they are
  * called. The {@link ELResolver} in the <code>ELContext</code> is used to 
  * resolve the top-level variables and to determine the behavior of the
- * <code>.</code> and <code>[]</code> operators. For any of the four methods,
+ * <code>.</code> and <code>[]</code> operators. For any of the five methods,
  * the {@link ELResolver#getValue} method is used to resolve all properties 
  * up to but excluding the last one. This provides the <code>base</code> 
- * object. At the last resolution, the <code>ValueExpression</code> will 
+ * object. For all methods other than the {@link #getValueReference} method,
+ * at the last resolution, the <code>ValueExpression</code> will 
  * call the corresponding {@link ELResolver#getValue}, 
  * {@link ELResolver#setValue}, {@link ELResolver#isReadOnly} or 
  * {@link ELResolver#getType} method, depending on which was called on 
  * the <code>ValueExpression</code>.
+ * For the {@link getValueReference} method, the (base, property) is
+ * not resolved by the ELResolver, but an instance of {@link ValueReference}
+ * is created to encapsulate this (base ,property), and returned.
  * </p>
  *
  * <p>See the notes about comparison, serialization and immutability in 
@@ -198,4 +203,21 @@ public abstract class ValueExpression
      *     that created this <code>ValueExpression</code>.
      */
     public abstract Class<?> getExpectedType();
+
+    /**
+     * Returns a {@link ValueReference} for this expression instance.
+     * @param context the context of this evaluation
+     * @return the <code>ValueReference</code> for this
+     * <code>ValueExpression</code>, or <code>null</code> if this
+     * <code>ValueExpression</code> is not a reference to
+     * a base (null or non-null) and a property.  
+     * If the base is null, and the property is a EL variable, return
+     * the <code>ValueReference</code> for the
+     * <code>ValueExpression</code> associated with this EL variable.
+     *
+     * @since EL 2.2
+     */
+    public ValueReference getValueReference(ELContext context) {
+        return null;
+    }
 }

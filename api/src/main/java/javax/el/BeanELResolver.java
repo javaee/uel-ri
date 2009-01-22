@@ -409,7 +409,7 @@ public class BeanELResolver extends ELResolver {
      *
      * <p>The provided method object will first be coerced to a
      * <code>String</code>.  The methods in the bean is then examined and 
-     * an attempt will be made to selct one for invocation.  If no suitable
+     * an attempt will be made to select one for invocation.  If no suitable
      * can be found, a <code>MethodNotFoundException</code> is thrown.
      *
      * If the given paramTypes is not <code>null</code>, select the method
@@ -451,6 +451,7 @@ public class BeanELResolver extends ELResolver {
      *     <code>InvocationTargetException</code>, extract its
      *     <code>cause</code> and pass it to the
      *     <code>ELException</code> constructor.
+     * @since EL 2.2
      */
 
     public Object invoke(ELContext context,

@@ -50,6 +50,7 @@ import javax.el.PropertyNotFoundException;
 import javax.el.PropertyNotWritableException;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
+import javax.el.ValueReference;
 
 import com.sun.el.lang.ELSupport;
 import com.sun.el.lang.EvaluationContext;
@@ -192,6 +193,18 @@ public final class ValueExpressionImpl extends ValueExpression implements
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
                 this.varMapper);
         return this.getNode().getType(ctx);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.el.ValueExpression#getValueReference(javax.el.ELContext)
+     */
+    public ValueReference getValueReference(ELContext context)
+            throws PropertyNotFoundException, ELException {
+        EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
+                this.varMapper);
+        return this.getNode().getValueReference(ctx);
     }
 
     /*

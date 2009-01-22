@@ -42,6 +42,7 @@ import java.lang.reflect.Method;
 import javax.el.ELException;
 import javax.el.ELResolver;
 import javax.el.MethodInfo;
+import javax.el.ValueReference;
 import javax.el.PropertyNotFoundException;
 import javax.el.PropertyNotWritableException;
 
@@ -83,6 +84,16 @@ public final class AstValue extends SimpleNode {
             ELSupport.throwUnhandled(t.base, property);
         }
         return ret;
+    }
+
+    public ValueReference getValueReference(EvaluationContext ctx)
+            throws ELException {
+        Target t = getTarget(ctx);
+        if (t.suffixNode instanceof AstMethodSuffix) {
+            return null;
+        }
+        Object property = t.suffixNode.getValue(ctx);
+        return new ValueReference(t.base, property);
     }
 
     private Object getValue(Object base, Node child, EvaluationContext ctx)

@@ -213,6 +213,7 @@ public abstract class ELResolver {
      *     <code>InvocationTargetException</code>, extract its
      *     <code>cause</code> and pass it to the
      *     <code>ELException</code> constructor.
+     * @since EL 2.2
      */
     public Object invoke(ELContext context,
                          Object base,

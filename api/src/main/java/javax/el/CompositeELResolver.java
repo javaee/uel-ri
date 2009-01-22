@@ -230,6 +230,7 @@ public class CompositeELResolver extends ELResolver {
      *     <code>null</code> if no parameters.
      * @return The result of the method invocation (<code>null</code> if
      *     the method has a <code>void</code> return type).
+     * @since EL 2.2
      */
     public Object invoke(ELContext context,
                          Object base,

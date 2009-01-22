@@ -43,6 +43,7 @@ import javax.el.MethodInfo;
 import javax.el.MethodNotFoundException;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
+import javax.el.ValueReference;
 import javax.el.PropertyNotFoundException;
 
 import com.sun.el.lang.EvaluationContext;
@@ -72,6 +73,18 @@ public final class AstIdentifier extends SimpleNode {
             ELSupport.throwUnhandled(null, this.image);
         }
         return ret;
+    }
+
+    public ValueReference getValuereference(EvaluationContext ctx)
+            throws ELException {
+        VariableMapper varMapper = ctx.getVariableMapper();
+        if (varMapper != null) {
+            ValueExpression expr = varMapper.resolveVariable(this.image);
+            if (expr != null) {
+                return expr.getValueReference(ctx.getELContext());
+            }
+        }
+        return new ValueReference(null, this.image);
     }
 
     public Object getValue(EvaluationContext ctx) throws ELException {

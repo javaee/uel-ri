@@ -38,6 +38,7 @@ package com.sun.el.parser;
 
 import javax.el.ELException;
 import javax.el.MethodInfo;
+import javax.el.ValueReference;
 import javax.el.PropertyNotWritableException;
 
 import com.sun.el.lang.ELSupport;
@@ -146,6 +147,11 @@ public abstract class SimpleNode extends ELSupport implements Node {
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         throw new UnsupportedOperationException();
+    }
+
+    public ValueReference getValueReference(EvaluationContext ctx)
+            throws ELException {
+        return null;
     }
 
     public boolean isReadOnly(EvaluationContext ctx)
