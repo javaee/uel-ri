@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.web</groupId>
     <artifactId>el</artifactId>
-    <version>2.1.2-SNAPSHOT</version>
+    <version>2.1.2-b03</version>
     <packaging>pom</packaging>
     <name>Expression Language related modules</name>
 
@@ -25,9 +24,9 @@
         </extensions>
     </build>
     <scm>
-        <connection>scm:svn:https://uel.dev.java.net/svn/uel/trunk</connection>
-        <developerConnection>scm:svn:https://uel.dev.java.net/svn/uel/trunk</developerConnection>
-        <url>https://uel.dev.java.net/source/browse/uel/trunk/</url>
+        <connection>scm:svn:https://uel.dev.java.net/svn/uel/tags/2.1.2-b03</connection>
+        <developerConnection>scm:svn:https://uel.dev.java.net/svn/uel/tags/2.1.2-b03</developerConnection>
+        <url>https://uel.dev.java.net/source/browse/uel/tags/2.1.2-b03</url>
     </scm>
 
     <repositories>
