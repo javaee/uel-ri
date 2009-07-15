@@ -217,9 +217,9 @@ public final class AstValue extends SimpleNode {
         Target t = getTarget(ctx);
         if (t.suffixNode instanceof AstMethodSuffix) {
             AstMethodSuffix methodSuffix = (AstMethodSuffix)t.suffixNode;
-            if (methodSuffix.getParamTypes() != null) {
-                paramTypes = methodSuffix.getParamTypes();
-            }
+            // Always use the param types in the expression, and ignore those
+            // specified elsewhere, such as TLD
+            paramTypes = methodSuffix.getParamTypes();
             Object[] params = methodSuffix.getParameters(ctx);
             String method = methodSuffix.getMethodName();
 
