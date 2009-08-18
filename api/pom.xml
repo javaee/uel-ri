@@ -91,6 +91,10 @@
                     <include>**/*.properties</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>src</directory>
+                <targetPath>src</targetPath>
+            </resource>
         </resources>
     </build>
 </project>
