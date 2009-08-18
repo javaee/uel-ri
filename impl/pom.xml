@@ -120,7 +120,8 @@
                 </includes>
             </resource>
             <resource>
-                <directory>src/main/resources</directory>
+                <directory>src</directory>
+                <targetPath>src</targetPath>
             </resource>
         </resources>
         <extensions>
