@@ -60,14 +60,14 @@ FIXME insert copyright
 </head>
 
 <body bgcolor="white">
-Provides the API for the <strong>Unified Expression Language</strong> shared by
-the JSP 2.1 and JSF 1.2 technologies.
+Provides the API for the <strong>Unified Expression Language 2.2</strong>
+used by the JSP 2.2 and JSF 2.0 technologies.
 
 <p>The Expression Language (EL) is a simple language designed to satisfy
 the specific needs of web application developers. It is currently defined
 in its own specification document within the JavaServer Pages (tm) (JSP) 
-2.1 specification, but does not have any dependencies on any portion 
-of the JSP 2.1 specification. It is intended for general use outside of
+2.2 specification, but does not have any dependencies on any portion 
+of the JSP 2.2 specification. It is intended for general use outside of
 the JSP and JSF specifications as well.</p>
 
 <p>This package contains the classes and interfaces that describe
@@ -121,6 +121,10 @@ of the model object <code>customer</code>) or as an <i>lvalue</i>
 <p>A {@link javax.el.MethodExpression} such as 
 <code>"${handler.process}"</code> makes it possible to invoke a method 
 (<code>process</code>) on a specific model object (<code>handler</code>).</p>
+
+<p>In version 2.2, either type of EL expression can represent a method
+invocation, such as <code>${trader.buy("JAVA")}</code>, where the arugments to
+the mothod invocation are specified in the expression.</p>
 
 <p>All expression classes extend the base class {@link javax.el.Expression}, making them
 serializable and forcing them to implement <code>equals()</code> and 
