@@ -144,15 +144,4 @@
             <version>2.1.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
-    <distributionManagement>
-        <site>
-            <id>java.net-uel</id>
-            <url>java-net:/uel/trunk/repo/</url>
-        </site>
-        <repository>
-            <uniqueVersion>false</uniqueVersion>
-            <id>java.net-maven2-repository</id>
-            <url>java-net:/maven2-repository/trunk/www/repository/</url>
-        </repository>
-    </distributionManagement>
 </project>
