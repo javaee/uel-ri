@@ -13,7 +13,8 @@ public class ValueReference implements Serializable {
     private Object base;
     private Object property;
 
-    public ValueReference(Object base, Object porperty) {
+    public ValueReference(Object base, Object property) {
+
         this.base = base;
         this.property = property;
     }
