@@ -7,6 +7,10 @@
     <packaging>pom</packaging>
     <name>Expression Language related modules</name>
 
+    <properties>
+        <findbugs.exclude></findbugs.exclude>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -43,7 +47,18 @@
                       </goals>
                  </execution>
               </executions>
-          </plugin>
+           </plugin>
+           <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>findbugs-maven-plugin</artifactId>
+              <version>2.1</version>
+              <configuration>
+                  <threshold>High</threshold>
+                  <excludeFilterFile>${findbugs.exclude}</excludeFilterFile>
+                  <findbugsXmlOutput>true</findbugsXmlOutput>
+                  <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+              </configuration>
+           </plugin>
         </plugins>
         <extensions>
             <extension>
@@ -52,6 +67,21 @@
             </extension>
         </extensions>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <threshold>High</threshold>
+                    <excludeFilterFile>${findbugs.exclude}</excludeFilterFile>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
     <scm>
         <connection>scm:svn:https://uel.dev.java.net/svn/uel/trunk</connection>
         <developerConnection>scm:svn:https://uel.dev.java.net/svn/uel/trunk</developerConnection>
