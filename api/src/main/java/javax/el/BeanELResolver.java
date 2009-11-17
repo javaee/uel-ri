@@ -705,10 +705,12 @@ public class BeanELResolver extends ELResolver {
                 throw new MethodNotFoundException(ex);
             }
         }
+
+        int paramCount = (params == null)? 0: params.length;
         for (Method m: base.getClass().getMethods()) {
             if (m.getName().equals(method) && (
                          m.isVarArgs() ||
-                         m.getParameterTypes().length==params.length)){
+                         m.getParameterTypes().length==paramCount)){
                 return m;
             }
         }
