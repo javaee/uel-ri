@@ -158,10 +158,5 @@
             <url>java-net:/maven2-repository/trunk/repository/</url>
         </repository>
     </distributionManagement>
-
-    <modules>
-        <module>api</module>
-        <module>impl</module>
-    </modules>
 </project>
 
