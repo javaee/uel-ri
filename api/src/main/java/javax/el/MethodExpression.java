@@ -164,7 +164,7 @@ public abstract class MethodExpression extends Expression
      *    parameters, <code>false</code> otherwise.
      * @since EL 2.2
      */
-    public boolean isParmetersProvided() {
+    public boolean isParametersProvided() {
         return false;
     }
 }

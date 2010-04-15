@@ -136,7 +136,10 @@ public final class ExpressionBuilder implements NodeVisitor {
         Node n = (Node) cache.get(expr);
         if (n == null) {
             try {
-                n = (new ELParser(new StringReader(expr)))
+                n = (new ELParser(
+                        new com.sun.el.parser.ELParserTokenManager(
+                            new com.sun.el.parser.SimpleCharStream(
+                                new StringReader(expr),1, 1, expr.length()))))
                         .CompositeExpression();
 
                 // validate composite expression
