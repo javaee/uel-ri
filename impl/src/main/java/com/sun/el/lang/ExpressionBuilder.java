@@ -139,7 +139,7 @@ public final class ExpressionBuilder implements NodeVisitor {
                 n = (new ELParser(
                         new com.sun.el.parser.ELParserTokenManager(
                             new com.sun.el.parser.SimpleCharStream(
-                                new StringReader(expr),1, 1, expr.length()))))
+                                new StringReader(expr),1, 1, expr.length()+1))))
                         .CompositeExpression();
 
                 // validate composite expression
