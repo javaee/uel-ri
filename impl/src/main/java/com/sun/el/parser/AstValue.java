@@ -239,4 +239,10 @@ public final class AstValue extends SimpleNode {
         }
         return result;
     }
+
+    @Override
+    public boolean isParametersProvided() {
+        return this.jjtGetNumChildren() == 2 &&
+                    this.children[1] instanceof AstMethodSuffix;
+    }
 }

@@ -217,6 +217,7 @@ public abstract class SimpleNode extends ELSupport implements Node {
         return true;
     }
 
+    @Override
     public boolean isParametersProvided() {
         return false;
     }

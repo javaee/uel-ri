@@ -73,13 +73,14 @@ public class ExpressionFactoryImpl extends ExpressionFactory {
     public MethodExpression createMethodExpression(ELContext context,
             String expression, Class expectedReturnType,
             Class[] expectedParamTypes) {
-        if (expectedParamTypes == null) {
+        ExpressionBuilder builder = new ExpressionBuilder(expression, context);
+        MethodExpression me = builder.createMethodExpression(expectedReturnType,
+                expectedParamTypes);
+        if (expectedParamTypes == null && !me.isParmetersProvided()) {
             throw new NullPointerException(MessageFactory
                     .get("error.method.nullParms"));
         }
-        ExpressionBuilder builder = new ExpressionBuilder(expression, context);
-        return builder.createMethodExpression(expectedReturnType,
-                expectedParamTypes);
+        return me;
     }
 
     public ValueExpression createValueExpression(ELContext context,
