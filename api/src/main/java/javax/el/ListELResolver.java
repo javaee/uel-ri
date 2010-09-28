@@ -397,9 +397,6 @@ public class ListELResolver extends ELResolver {
         if (p instanceof Character) {
             return ((Character) p).charValue();
         }
-        if (p instanceof Boolean) {
-            return ((Boolean) p).booleanValue()? 1: 0;
-        }
         if (p instanceof Number) {
             return ((Number) p).intValue();
         }

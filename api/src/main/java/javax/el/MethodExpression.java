@@ -126,7 +126,7 @@ public abstract class MethodExpression extends Expression
      * the method invocation.
      *
      * Any parameters passed to this method is ignored if isLiteralText()
-     * or isParametersProvided() is true.
+     * or isParmetersProvided() is true.
      *
      * @param context The context of this evaluation.
      * @param params The parameters to pass to the method, or
