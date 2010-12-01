@@ -131,9 +131,9 @@
     </reporting>
 
     <scm>
-        <connection>scm:svn:https://uel.dev.java.net/svn/uel/trunk</connection>
-        <developerConnection>scm:svn:https://uel.dev.java.net/svn/uel/trunk</developerConnection>
-        <url>https://uel.dev.java.net/source/browse/uel/trunk/</url>
+        <connection>scm:svn:svn+ssh://janey@svn.java.net/uel~svn/trunk</connection>
+        <developerConnection>scm:svn:svn+ssh://janey@svn.java.net/uel~svn/trunk</developerConnection>
+        <url>svn+ssh://janey@svn.java.net/uel~svn/trunk/</url>
     </scm>
 
     <repositories>
