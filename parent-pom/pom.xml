@@ -160,12 +160,12 @@
     <distributionManagement>
         <site>
             <id>java.net-el</id>
-            <url>java-net:/uel/trunk/repo/</url>
+            <url>java-net:/uel~svn/trunk/repo/</url>
         </site>
         <repository>
             <uniqueVersion>false</uniqueVersion>
             <id>java.net-maven2-repository</id>
-            <url>java-net:/maven2-repository/trunk/repository/</url>
+            <url>java-net:/maven2-repository~svn/trunk/repository/</url>
         </repository>
     </distributionManagement>
 </project>
