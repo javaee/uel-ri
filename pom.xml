@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,28 +42,28 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.web</groupId>
-        <artifactId>el</artifactId>
-        <version>2.2.1-b01</version>
+        <artifactId>el</artifactId>    
+        <version>2.2.1-b03</version>
     </parent>
-    <artifactId>el-impl</artifactId>
-    <version>2.2.1-SNAPSHOT</version>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>javax.el</groupId>
+    <artifactId>el-api</artifactId>
     <packaging>jar</packaging>
-    <name>Expression Language Implementation</name>
-
+    <version>2.2.1-b04</version>
+    <name>Expression Language API (2.1 Maintenance Release)</name>
     <developers>
         <developer>
             <id>kchung</id>
-            <name>Kin-man Chung</name>
+            <name>Kin Man Chung</name>
             <url>http://blogs.sun.com/kchung/</url>
             <organization>Sun Microsystems, Inc.</organization>
             <roles>
                 <role>lead</role>
             </roles>
         </developer>
-    </developers>  
+    </developers>
 
     <repositories>
         <repository>
@@ -73,89 +73,43 @@
         </repository>
     </repositories>
 
+
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifestFile>
-                            ${project.build.outputDirectory}/META-INF/MANIFEST.MF
-                        </manifestFile>
-                    </archive>
-                </configuration>
-            </plugin>
-
-            <!-- Configure maven-bundle-plugin to generate OSGi manifest.
-                 Please note: we use the manifest goal only and not the bundle goal.
-                  The bundle goal can lead to very surprising results if the
-                  package names are not correctly specified. So,
-                  we use the jar plugin to generate the jar.-->
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <configuration>
-                    <instructions>
-                        <Export-Package>
-                            com.sun.el
-                        </Export-Package>
-                        <Private-Package>
-                            com.sun.el.lang,
-                            com.sun.el.parser,
-                            com.sun.el.util
-                        </Private-Package>
-                    </instructions>
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
+                        <phase>javadoc</phase>
                         <goals>
-                            <goal>manifest</goal>
+                            <goal>javadoc</goal>
                         </goals>
+                        <configuration>
+                            <groups>
+                                <group>
+                                    <title>Expresion Language API Documentation</title>
+                                    <packages>javax.el</packages>
+                                </group>
+                            </groups>
+                        </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <source>1.5</source>
-                        <target>1.5</target>
-                    </configuration>
-            </plugin>
-        </plugins>
+            </plugin>   
+    	</plugins>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
                 <includes>
                     <include>**/*.properties</include>
-                    <include>**/*.xml</include>
                 </includes>
             </resource>
         </resources>
-        <extensions>
-            <extension>
-                <groupId>org.jvnet.wagon-svn</groupId>
-                <artifactId>wagon-svn</artifactId>
-                <version>1.9</version>
-            </extension>
-        </extensions>
     </build>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>glassfish-repository</id>
-            <name>Java.net Repository for Maven 2</name>
-            <url>http://download.java.net/maven/glassfish</url>
-            <snapshots>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-    <dependencies>
-        <dependency>
-            <groupId>javax.el</groupId>
-            <artifactId>el-api</artifactId>
-            <version>2.2.1-b01</version>
-        </dependency>
-    </dependencies>
+
+  <scm>
+    <connection>scm:svn:svn+ssh://janey@svn.java.net/uel~svn/tags/uel-api-2.2.1-b04</connection>
+    <developerConnection>scm:svn:svn+ssh://janey@svn.java.net/uel~svn/tags/uel-api-2.2.1-b04</developerConnection>
+    <url>svn+ssh://janey@svn.java.net/uel~svn/tags/uel-api-2.2.1-b04</url>
+  </scm>
 </project>
