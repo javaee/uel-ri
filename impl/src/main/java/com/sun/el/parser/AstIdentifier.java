@@ -79,7 +79,7 @@ public final class AstIdentifier extends SimpleNode {
         return ret;
     }
 
-    public ValueReference getValuereference(EvaluationContext ctx)
+    public ValueReference getValueReference(EvaluationContext ctx)
             throws ELException {
         VariableMapper varMapper = ctx.getVariableMapper();
         if (varMapper != null) {
