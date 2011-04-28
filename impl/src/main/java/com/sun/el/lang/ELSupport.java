@@ -106,10 +106,16 @@ public class ELSupport {
             return coerceToString(obj0).compareTo(coerceToString(obj1));
         }
         if (obj0 instanceof Comparable) {
-            return (obj1 != null) ? ((Comparable) obj0).compareTo(obj1) : 1;
+            // Safe cast
+            @SuppressWarnings("unchecked")
+            Comparable<Object> cobj0 = (Comparable) obj0;
+            return (obj1 != null) ? cobj0.compareTo(obj1) : 1;
         }
         if (obj1 instanceof Comparable) {
-            return (obj0 != null) ? -((Comparable) obj1).compareTo(obj0) : -1;
+            // Safe cast
+            @SuppressWarnings("unchecked")
+            Comparable<Object> cobj1 = (Comparable) obj1;
+            return (obj0 != null) ? -(cobj1.compareTo(obj0)) : -1;
         }
         throw new ELException(MessageFactory.get("error.compare", obj0, obj1));
     }
@@ -184,6 +190,10 @@ public class ELSupport {
                 obj, obj.getClass(), Boolean.class));
     }
 
+    // Enum types are hard construct.   We can declare this as
+    // <T extends Enum<T>> T coerceToEnum(Object, Class<T> type)
+    // but this makes it harder to get the calls right.
+    @SuppressWarnings("unchecked")
     public final static Enum coerceToEnum(final Object obj, Class type) {
         if (obj == null || "".equals(obj)) {
             return null;
@@ -346,7 +356,7 @@ public class ELSupport {
         }
     }
 
-    public final static void checkType(final Object obj, final Class type)
+    public final static void checkType(final Object obj, final Class<?> type)
         throws IllegalArgumentException {
         if (String.class.equals(type)) {
             coerceToString(obj);
@@ -365,7 +375,7 @@ public class ELSupport {
         }
     }
 
-    public final static Object coerceToType(final Object obj, final Class type)
+    public final static Object coerceToType(final Object obj, final Class<?> type)
             throws IllegalArgumentException {
         if (type == null || Object.class.equals(type) ||
                 (obj != null && type.isAssignableFrom(obj.getClass()))) {

@@ -202,7 +202,7 @@ public class MapELResolver extends ELResolver {
     }
 
     static private Class<?> theUnmodifiableMapClass =
-        Collections.unmodifiableMap(new HashMap()).getClass();
+        Collections.unmodifiableMap(new HashMap<Object, Object>()).getClass();
 
     /**
      * If the base object is a map, attempts to set the value associated with
@@ -257,7 +257,9 @@ public class MapELResolver extends ELResolver {
 
         if (base != null && base instanceof Map) {
             context.setPropertyResolved(true);
-            Map map = (Map) base;
+            // The cast is safe
+            @SuppressWarnings("unchecked")
+            Map<Object, Object> map = (Map)base;
             if (isReadOnly || map.getClass() == theUnmodifiableMapClass) {
                 throw new PropertyNotWritableException();
             }

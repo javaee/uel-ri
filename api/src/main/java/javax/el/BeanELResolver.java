@@ -613,7 +613,7 @@ public class BeanELResolver extends ELResolver {
      * same method must be found in a superclass or interface.
      **/
 
-    static private Method getMethod(Class cl, Method method) {
+    static private Method getMethod(Class<?> cl, Method method) {
 
         if (method == null) {
             return null;
@@ -622,9 +622,9 @@ public class BeanELResolver extends ELResolver {
         if (Modifier.isPublic (cl.getModifiers ())) {
             return method;
         }
-        Class [] interfaces = cl.getInterfaces ();
+        Class<?> [] interfaces = cl.getInterfaces ();
         for (int i = 0; i < interfaces.length; i++) {
-            Class c = interfaces[i];
+            Class<?> c = interfaces[i];
             Method m = null;
             try {
                 m = c.getMethod(method.getName(), method.getParameterTypes());
@@ -634,7 +634,7 @@ public class BeanELResolver extends ELResolver {
             } catch (NoSuchMethodException ex) {
             }
         }
-        Class c = cl.getSuperclass();
+        Class<?> c = cl.getSuperclass();
         if (c != null) {
             Method m = null;
             try {

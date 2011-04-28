@@ -268,7 +268,9 @@ public class ListELResolver extends ELResolver {
 
         if (base != null && base instanceof List) {
             context.setPropertyResolved(true);
-            List list = (List) base;
+            // Safe cast
+            @SuppressWarnings("unchecked")
+            List<Object> list = (List) base;
             int index = toInteger(property);
             if (isReadOnly) {
                 throw new PropertyNotWritableException();
@@ -290,7 +292,7 @@ public class ListELResolver extends ELResolver {
     }
 
     static private Class<?> theUnmodifiableListClass =
-        Collections.unmodifiableList(new ArrayList()).getClass();
+        Collections.unmodifiableList(new ArrayList<Object>()).getClass();
 
     /**
      * If the base object is a list, returns whether a call to 

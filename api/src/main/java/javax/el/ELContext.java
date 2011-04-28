@@ -254,7 +254,7 @@ public abstract class ELContext {
     public abstract VariableMapper getVariableMapper();
 
     private boolean resolved;
-    private HashMap map = new HashMap();
+    private HashMap<Class<?>, Object> map = new HashMap<Class<?>, Object>();
 
 
 }

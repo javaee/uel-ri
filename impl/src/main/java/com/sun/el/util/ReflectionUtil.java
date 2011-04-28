@@ -172,8 +172,8 @@ public class ReflectionUtil {
      * same method must be found in a superclass or interface.
      **/
 
-    static private Method getMethod(Class cl, String methodName,
-                                    Class[] paramTypes) {
+    static private Method getMethod(Class<?> cl, String methodName,
+                                    Class<?>[] paramTypes) {
 
         Method m = null;
         try {
@@ -182,7 +182,7 @@ public class ReflectionUtil {
             return null;
         }
 
-        Class dclass  = m.getDeclaringClass();
+        Class<?> dclass  = m.getDeclaringClass();
         if (Modifier.isPublic(dclass.getModifiers())) {
             return m;
         }
@@ -193,7 +193,7 @@ public class ReflectionUtil {
                 return m;
             }
         }
-        Class c = dclass.getSuperclass();
+        Class<?> c = dclass.getSuperclass();
         if (c != null) {
             m = getMethod(c, methodName, paramTypes);
             if (m != null) {

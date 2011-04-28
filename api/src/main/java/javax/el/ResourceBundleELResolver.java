@@ -279,14 +279,14 @@ public class ResourceBundleELResolver extends ELResolver {
      *         representing a key in this bundle, or <code>null</code> if the
      *         base object is not a ResourceBundle.
      */
-    public Iterator getFeatureDescriptors(ELContext context, Object base) {
+    public Iterator<FeatureDescriptor> getFeatureDescriptors(ELContext context, Object base) {
         if (base instanceof ResourceBundle) {
             ResourceBundle bundle = (ResourceBundle) base;
-            List features = new ArrayList();
+            List<FeatureDescriptor> features = new ArrayList<FeatureDescriptor>();
             String key = null;
             FeatureDescriptor desc = null;
-            for (Enumeration e = bundle.getKeys(); e.hasMoreElements();) {
-                key = (String) e.nextElement();
+            for (Enumeration<String> e = bundle.getKeys(); e.hasMoreElements();) {
+                key = e.nextElement();
                 desc = new FeatureDescriptor();
                 desc.setDisplayName(key);
                 desc.setExpert(false);

@@ -80,7 +80,7 @@ class FactoryFinder {
                                       Properties properties)
     {
         try {
-            Class spiClass;
+            Class<?> spiClass;
             if (classLoader == null) {
                 spiClass = Class.forName(className);
             } else {

@@ -90,8 +90,11 @@ class ELUtil {
      * {@link javax.faces.context.FacesContext} instance for each
      * processing thread.</p>
      */
-    private static ThreadLocal instance = new ThreadLocal() {
-            protected Object initialValue() { return (null); }
+    private static ThreadLocal<Map<String, ResourceBundle>> instance =
+                new ThreadLocal<Map<String, ResourceBundle>>() {
+            protected Map<String, ResourceBundle> initialValue() {
+                return (null);
+            }
         };
         
     /**
@@ -101,10 +104,10 @@ class ELUtil {
      * Thread instance.
      */
 
-    private static Map getCurrentInstance() {
-        Map result = (Map) instance.get();
+    private static Map<String, ResourceBundle> getCurrentInstance() {
+        Map<String, ResourceBundle> result = instance.get();
         if (null == result) {
-            result = new HashMap();
+            result = new HashMap<String, ResourceBundle>();
             setCurrentInstance(result);
         }
         return result;
@@ -117,7 +120,7 @@ class ELUtil {
      * @param context the Map to be stored in ThreadLocal storage.
      */
 
-    private static void setCurrentInstance(Map context) {
+    private static void setCurrentInstance(Map<String, ResourceBundle> context) {
 
         instance.set(context);
 
@@ -179,10 +182,10 @@ class ELUtil {
             locale = Locale.getDefault();
         }
         if (null != locale) {
-            Map threadMap = getCurrentInstance();
+            Map<String, ResourceBundle> threadMap = getCurrentInstance();
             ResourceBundle rb = null;
             if (null == (rb = (ResourceBundle)
-            threadMap.get(locale.toString()))) {
+                    threadMap.get(locale.toString()))) {
                 rb = ResourceBundle.getBundle("javax.el.PrivateMessages",
                                               locale);
                 threadMap.put(locale.toString(), rb);

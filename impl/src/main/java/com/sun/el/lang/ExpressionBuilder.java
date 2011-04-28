@@ -45,6 +45,7 @@ import java.lang.reflect.Method;
 import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.Collections;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.el.ELContext;
@@ -77,27 +78,31 @@ import com.sun.el.util.MessageFactory;
 public final class ExpressionBuilder implements NodeVisitor {
 
      private static final int CACHE_INIT_SIZE = 256;
-     private static final ConcurrentHashMap cache = 
-         new ConcurrentHashMap(CACHE_INIT_SIZE) {
+     private static final ConcurrentHashMap<String, Node> cache = 
+         new ConcurrentHashMap<String, Node>(CACHE_INIT_SIZE) {
+
+             private ConcurrentHashMap<String, SoftReference<Node>> map =
+                 new ConcurrentHashMap<String, SoftReference<Node>>(CACHE_INIT_SIZE);
+
              @Override
-             public Object put(Object key, Object value) {
-                 SoftReference ref = new SoftReference(value);
-                 SoftReference prev = (SoftReference)super.put(key, ref);
+             public Node put(String key, Node value) {
+                 SoftReference<Node> ref = new SoftReference<Node>(value);
+                 SoftReference<Node> prev = map.put(key, ref);
                  return prev == null? null: prev.get();
              }
  
              @Override
-             public Object putIfAbsent(Object key, Object value) {
-                 SoftReference ref = new SoftReference(value);
-                 SoftReference prev = (SoftReference)super.putIfAbsent(key, ref);
+             public Node putIfAbsent(String key, Node value) {
+                 SoftReference<Node> ref = new SoftReference<Node>(value);
+                 SoftReference<Node> prev = map.putIfAbsent(key, ref);
                  return prev == null? null: prev.get();
              }
  
              @Override
-             public Object get(Object key) {
-                 SoftReference ref = (SoftReference)super.get(key);
+             public Node get(Object key) {
+                 SoftReference<Node> ref = map.get(key);
                  if (ref != null && ref.get() == null) {
-                     remove(key);
+                     map.remove(key);
                  }
                  return ref != null ? ref.get() : null;
              }
