@@ -85,7 +85,8 @@
     <licenses>
         <license>
             <name>CDDL + GPLv2 with classpath exception</name>
-            <url>https://glassfish.dev.java.net/nonav/public/CDDL+GPL.html</url>            <distribution>repo</distribution>
+            <url>https://glassfish.dev.java.net/nonav/public/CDDL+GPL.html</url>
+            <distribution>repo</distribution>
             <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
@@ -99,6 +100,11 @@
             <archive>dev@uel.java.net</archive>
         </mailingList>
     </mailingLists>
+    <scm>
+        <connection>scm:svn:https://svn.java.net/svn/uel~svn</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/uel~svn</developerConnection>
+        <url>http://java.net/projects/uel/sources/svn/show</url>
+    </scm>
 
     <build>
         <plugins>
