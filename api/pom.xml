@@ -101,8 +101,8 @@
         </mailingList>
     </mailingLists>
     <scm>
-        <connection>scm:svn:https://svn.java.net/svn/uel~svn</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/uel~svn</developerConnection>
+        <connection>scm:svn:https://svn.java.net/svn/uel~svn/trunk/api</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/uel~svn/trunk/api</developerConnection>
         <url>http://java.net/projects/uel/sources/svn/show</url>
     </scm>
 
