@@ -94,6 +94,11 @@ import java.beans.FeatureDescriptor;
  */
 public class CompositeELResolver extends ELResolver {
 
+    public CompositeELResolver() {
+        this.size = 0;
+        this.elResolvers = new ELResolver[16];
+    }
+
     /**
      * Adds the given resolver to the list of component resolvers.
      *
@@ -108,8 +113,14 @@ public class CompositeELResolver extends ELResolver {
         if (elResolver == null) {
             throw new NullPointerException();
         }
-                                                                                
-        elResolvers.add(elResolver);
+
+        if (size >= elResolvers.length) {
+            ELResolver[] newResolvers = new ELResolver[size * 2];
+            System.arraycopy(elResolvers, 0, newResolvers, 0, size);
+            elResolvers = newResolvers;
+        }
+
+        elResolvers[size++] = elResolver;
     }
 
     /**
@@ -166,17 +177,15 @@ public class CompositeELResolver extends ELResolver {
     public Object getValue(ELContext context,
                            Object base,
                            Object property) {
+
         context.setPropertyResolved(false);
-        int i = 0, len = this.elResolvers.size();
-        ELResolver elResolver;
-        Object value; 
-        while (i < len) {
-            elResolver = this.elResolvers.get(i);
-            value = elResolver.getValue(context, base, property);
+
+        Object value = null; 
+        for (int i = 0; i < size; i++) {
+            value = elResolvers[i].getValue(context, base, property);
             if (context.isPropertyResolved()) {
                 return value;
             }
-            i++;
         } 
         return null;
     }
@@ -238,17 +247,15 @@ public class CompositeELResolver extends ELResolver {
     public Class<?> getType(ELContext context,
                          Object base,
                          Object property) {
+
         context.setPropertyResolved(false);
-        int i = 0, len = this.elResolvers.size();
-        ELResolver elResolver;
+
         Class<?> type;  
-        while (i < len) {
-            elResolver = this.elResolvers.get(i);
-            type = elResolver.getType(context, base, property);
+        for (int i = 0; i < size; i++) {
+            type = elResolvers[i].getType(context, base, property);
             if (context.isPropertyResolved()) {
                 return type;
             }
-            i++;
         }
         return null;
     }
@@ -307,16 +314,14 @@ public class CompositeELResolver extends ELResolver {
                          Object base,
                          Object property,
                          Object val) {
+
         context.setPropertyResolved(false);
-        int i = 0, len = this.elResolvers.size();
-        ELResolver elResolver;
-        while (i < len) {
-            elResolver = this.elResolvers.get(i);
-            elResolver.setValue(context, base, property, val);
+
+        for (int i = 0; i < size; i++) {
+            elResolvers[i].setValue(context, base, property, val);
             if (context.isPropertyResolved()) {
                 return;
             }
-            i++;
         }
     }
 
@@ -376,17 +381,15 @@ public class CompositeELResolver extends ELResolver {
     public boolean isReadOnly(ELContext context,
                               Object base,
                               Object property) {
+
         context.setPropertyResolved(false);
-        int i = 0, len = this.elResolvers.size();
-        ELResolver elResolver;
+
         boolean readOnly;
-        while (i < len) {
-            elResolver = this.elResolvers.get(i);
-            readOnly = elResolver.isReadOnly(context, base, property);
+        for (int i = 0; i < size; i++) {
+            readOnly = elResolvers[i].isReadOnly(context, base, property);
             if (context.isPropertyResolved()) {
                 return readOnly;
             }
-            i++;
         }
         return false; // Does not matter
     }
@@ -420,7 +423,7 @@ public class CompositeELResolver extends ELResolver {
     public Iterator<FeatureDescriptor> getFeatureDescriptors(
                                           ELContext context,
                                           Object base) {
-        return new CompositeIterator(elResolvers.iterator(), context, base);
+        return new CompositeIterator(elResolvers, size, context, base);
     }
 
     /**
@@ -447,10 +450,9 @@ public class CompositeELResolver extends ELResolver {
     public Class<?> getCommonPropertyType(ELContext context,
                                                Object base) {
         Class<?> commonPropertyType = null;
-        Iterator<ELResolver> iter = elResolvers.iterator();
-        while (iter.hasNext()) {
-            ELResolver elResolver = iter.next();
-            Class<?> type = elResolver.getCommonPropertyType(context, base);
+        for (int i = 0; i < size; i++) {
+
+            Class<?> type = elResolvers[i].getCommonPropertyType(context, base);
             if (type == null) {
                 // skip this EL Resolver
                 continue;
@@ -468,29 +470,33 @@ public class CompositeELResolver extends ELResolver {
         return commonPropertyType;
     }
 
-    private final ArrayList<ELResolver> elResolvers =
-                                            new ArrayList<ELResolver>();
+    private ELResolver[] elResolvers;
+    private int size;
 
     private static class CompositeIterator
             implements Iterator<FeatureDescriptor> {
 
-        Iterator<ELResolver> compositeIter;
-        Iterator<FeatureDescriptor> propertyIter;
+        ELResolver[] resolvers;
+        int size;
+        int index = 0;
+        Iterator<FeatureDescriptor> propertyIter = null;
         ELContext context;
         Object base;
 
-        CompositeIterator(Iterator<ELResolver> iter,
+        CompositeIterator(ELResolver[] resolvers,
+                          int size,
                           ELContext context,
                           Object base) {
-            compositeIter = iter;
+            this.resolvers = resolvers;
+            this.size = size;
             this.context = context;
             this.base = base;
         }
 
         public boolean hasNext() {
             if (propertyIter == null || !propertyIter.hasNext()) {
-                while (compositeIter.hasNext()) {
-                    ELResolver elResolver = compositeIter.next();
+                while (index < size) {
+                    ELResolver elResolver = resolvers[index++];
                     propertyIter = elResolver.getFeatureDescriptors(
                         context, base);
                     if (propertyIter != null) {
@@ -504,8 +510,8 @@ public class CompositeELResolver extends ELResolver {
 
         public FeatureDescriptor next() {
             if (propertyIter == null || !propertyIter.hasNext()) {
-                while (compositeIter.hasNext()) {
-                    ELResolver elResolver = compositeIter.next();
+                while (index < size) {
+                    ELResolver elResolver = resolvers[index++];;
                     propertyIter = elResolver.getFeatureDescriptors(
                         context, base);
                     if (propertyIter != null) {
