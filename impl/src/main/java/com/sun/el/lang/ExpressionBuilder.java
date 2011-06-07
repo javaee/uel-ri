@@ -37,6 +37,8 @@ package com.sun.el.lang;
 
 import java.io.StringReader;
 import java.lang.reflect.Method;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.Collections;
@@ -71,32 +73,84 @@ import com.sun.el.util.MessageFactory;
  */
 public final class ExpressionBuilder implements NodeVisitor {
 
-     private static final int CACHE_INIT_SIZE = 256;
-     private static final ConcurrentHashMap cache = 
-         new ConcurrentHashMap(CACHE_INIT_SIZE) {
-             @Override
-             public Object put(Object key, Object value) {
-                 SoftReference ref = new SoftReference(value);
-                 SoftReference prev = (SoftReference)super.put(key, ref);
-                 return prev == null? null: prev.get();
-             }
- 
-             @Override
-             public Object putIfAbsent(Object key, Object value) {
-                 SoftReference ref = new SoftReference(value);
-                 SoftReference prev = (SoftReference)super.putIfAbsent(key, ref);
-                 return prev == null? null: prev.get();
-             }
- 
-             @Override
-             public Object get(Object key) {
-                 SoftReference ref = (SoftReference)super.get(key);
-                 if (ref != null && ref.get() == null) {
-                     remove(key);
-                 }
-                 return ref != null ? ref.get() : null;
-             }
-         };
+    static private class StringSoftReference extends SoftReference<String> {
+
+        StringSoftReference(String referent, ReferenceQueue<String> refQ) {
+            super(referent, refQ);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            String thisString = this.get();
+            if (thisString == null) {
+                return false;
+            }
+            @SuppressWarnings("unchecked")
+            SoftReference<String> sr = (SoftReference<String>) obj;
+            return thisString.equals(sr.get());
+        }
+
+        @Override
+        public int hashCode() {
+            String thisString = this.get();
+            return (thisString == null)? 0: thisString.hashCode();
+        }
+    }
+
+    static private class SoftConcurrentHashMap extends
+                ConcurrentHashMap<String, Node> {
+
+        private static final int CACHE_INIT_SIZE = 256;
+        private ConcurrentHashMap<StringSoftReference,SoftReference<Node>> map =                 new ConcurrentHashMap<StringSoftReference, SoftReference<Node>>(CACHE_INIT_SIZE);
+        private ReferenceQueue<String> refQ = new ReferenceQueue<String>();
+
+        // Remove map entries that have been placed on the queue by GC.
+        private void cleanup() {
+            Reference<? extends String> keyRef;
+            while ((keyRef = refQ.poll()) != null) {
+                map.remove(keyRef);
+            }
+        }
+
+        @Override
+        public Node put(String key, Node value) {
+            cleanup();
+            SoftReference<Node> valueRef = new SoftReference<Node>(value);
+            StringSoftReference keyRef = new StringSoftReference(key, refQ);
+            SoftReference<Node> prev = map.put(keyRef, valueRef);
+            return prev == null? null: prev.get();
+        }
+
+        @Override
+        public Node putIfAbsent(String key, Node value) {
+            cleanup();
+            SoftReference<Node> valueRef = new SoftReference<Node>(value);
+            StringSoftReference keyRef = new StringSoftReference(key, refQ);
+            SoftReference<Node> prev = map.putIfAbsent(keyRef, valueRef);
+            return prev == null? null: prev.get();
+        }
+        @Override
+        public Node get(Object key) {
+            if (!(key instanceof String)) {
+                return null;
+            }
+            StringSoftReference keyRef =
+                        new StringSoftReference((String)key, refQ);
+            SoftReference<Node> valueRef = map.get(keyRef);
+            if (valueRef == null) {
+                return null;
+            }
+            if (valueRef.get() == null) {
+                // value has been garbage collected, remove entry in map
+                map.remove(keyRef);
+                return null;
+            }
+            return valueRef.get();
+        }
+    }
+
+    private static final SoftConcurrentHashMap cache =
+                new SoftConcurrentHashMap();
 
     private FunctionMapper fnMapper;
 
@@ -133,7 +187,7 @@ public final class ExpressionBuilder implements NodeVisitor {
             throw new ELException(MessageFactory.get("error.null"));
         }
 
-        Node n = (Node) cache.get(expr);
+        Node n = cache.get(expr);
         if (n == null) {
             try {
                 n = (new ELParser(
