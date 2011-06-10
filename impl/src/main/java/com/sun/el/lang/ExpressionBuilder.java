@@ -73,27 +73,11 @@ import com.sun.el.util.MessageFactory;
  */
 public final class ExpressionBuilder implements NodeVisitor {
 
-    static private class StringSoftReference extends SoftReference<String> {
-
-        StringSoftReference(String referent, ReferenceQueue<String> refQ) {
-            super(referent, refQ);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            String thisString = this.get();
-            if (thisString == null) {
-                return false;
-            }
-            @SuppressWarnings("unchecked")
-            SoftReference<String> sr = (SoftReference<String>) obj;
-            return thisString.equals(sr.get());
-        }
-
-        @Override
-        public int hashCode() {
-            String thisString = this.get();
-            return (thisString == null)? 0: thisString.hashCode();
+    static private class NodeSoftReference extends SoftReference<Node> {
+        final String key;
+        NodeSoftReference(String key, Node node, ReferenceQueue<Node> refQ) {
+            super(node, refQ);
+            this.key = key;
         }
     }
 
@@ -101,51 +85,47 @@ public final class ExpressionBuilder implements NodeVisitor {
                 ConcurrentHashMap<String, Node> {
 
         private static final int CACHE_INIT_SIZE = 256;
-        private ConcurrentHashMap<StringSoftReference,SoftReference<Node>> map =                 new ConcurrentHashMap<StringSoftReference, SoftReference<Node>>(CACHE_INIT_SIZE);
-        private ReferenceQueue<String> refQ = new ReferenceQueue<String>();
+        private ConcurrentHashMap<String, NodeSoftReference> map =
+            new ConcurrentHashMap<String, NodeSoftReference>(CACHE_INIT_SIZE);
+        private ReferenceQueue<Node> refQ = new ReferenceQueue<Node>();
 
         // Remove map entries that have been placed on the queue by GC.
         private void cleanup() {
-            Reference<? extends String> keyRef;
-            while ((keyRef = refQ.poll()) != null) {
-                map.remove(keyRef);
+            NodeSoftReference nodeRef = null;
+            while ((nodeRef = (NodeSoftReference)refQ.poll()) != null) {
+                map.remove(nodeRef.key);
             }
         }
 
         @Override
         public Node put(String key, Node value) {
             cleanup();
-            SoftReference<Node> valueRef = new SoftReference<Node>(value);
-            StringSoftReference keyRef = new StringSoftReference(key, refQ);
-            SoftReference<Node> prev = map.put(keyRef, valueRef);
+            NodeSoftReference prev =
+                map.put(key, new NodeSoftReference(key, value, refQ));
             return prev == null? null: prev.get();
         }
 
         @Override
         public Node putIfAbsent(String key, Node value) {
             cleanup();
-            SoftReference<Node> valueRef = new SoftReference<Node>(value);
-            StringSoftReference keyRef = new StringSoftReference(key, refQ);
-            SoftReference<Node> prev = map.putIfAbsent(keyRef, valueRef);
+            NodeSoftReference prev = 
+                map.putIfAbsent(key, new NodeSoftReference(key, value, refQ));
             return prev == null? null: prev.get();
         }
+
         @Override
         public Node get(Object key) {
-            if (!(key instanceof String)) {
+            cleanup();
+            NodeSoftReference nodeRef = map.get(key);
+            if (nodeRef == null) {
                 return null;
             }
-            StringSoftReference keyRef =
-                        new StringSoftReference((String)key, refQ);
-            SoftReference<Node> valueRef = map.get(keyRef);
-            if (valueRef == null) {
-                return null;
-            }
-            if (valueRef.get() == null) {
+            if (nodeRef.get() == null) {
                 // value has been garbage collected, remove entry in map
-                map.remove(keyRef);
+                map.remove(key);
                 return null;
             }
-            return valueRef.get();
+            return nodeRef.get();
         }
     }
 
