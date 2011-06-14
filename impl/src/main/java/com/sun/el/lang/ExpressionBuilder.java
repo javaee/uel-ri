@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,9 @@ package com.sun.el.lang;
 
 import java.io.StringReader;
 import java.lang.reflect.Method;
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.ref.ReferenceQueue;
 import java.util.Map;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentMap;
@@ -73,45 +75,71 @@ import com.sun.el.util.MessageFactory;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
+ * @author Kin-man Chung // EL cache
  * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: kchung $
  */
 public final class ExpressionBuilder implements NodeVisitor {
 
-     private static final int CACHE_INIT_SIZE = 256;
-     private static final ConcurrentHashMap<String, Node> cache = 
-         new ConcurrentHashMap<String, Node>(CACHE_INIT_SIZE) {
+    static private class NodeSoftReference extends SoftReference<Node> {
+        final String key;
+        NodeSoftReference(String key, Node node, ReferenceQueue<Node> refQ) {
+            super(node, refQ);
+            this.key = key;
+        }
+    }
 
-             private ConcurrentHashMap<String, SoftReference<Node>> map =
-                 new ConcurrentHashMap<String, SoftReference<Node>>(CACHE_INIT_SIZE);
+    static private class SoftConcurrentHashMap extends
+                ConcurrentHashMap<String, Node> {
 
-             @Override
-             public Node put(String key, Node value) {
-                 SoftReference<Node> ref = new SoftReference<Node>(value);
-                 SoftReference<Node> prev = map.put(key, ref);
-                 return prev == null? null: prev.get();
-             }
- 
-             @Override
-             public Node putIfAbsent(String key, Node value) {
-                 SoftReference<Node> ref = new SoftReference<Node>(value);
-                 SoftReference<Node> prev = map.putIfAbsent(key, ref);
-                 return prev == null? null: prev.get();
-             }
- 
-             @Override
-             public Node get(Object key) {
-                 SoftReference<Node> ref = map.get(key);
-                 if (ref != null && ref.get() == null) {
-                     map.remove(key);
-                 }
-                 return ref != null ? ref.get() : null;
-             }
-         };
+        private static final int CACHE_INIT_SIZE = 256;
+        private ConcurrentHashMap<String, NodeSoftReference> map =
+            new ConcurrentHashMap<String, NodeSoftReference>(CACHE_INIT_SIZE);
+        private ReferenceQueue<Node> refQ = new ReferenceQueue<Node>();
 
+        // Remove map entries that have been placed on the queue by GC.
+        private void cleanup() {
+            NodeSoftReference nodeRef = null;
+            while ((nodeRef = (NodeSoftReference)refQ.poll()) != null) {
+                map.remove(nodeRef.key);
+            }
+        }
+
+        @Override
+        public Node put(String key, Node value) {
+            cleanup();
+            NodeSoftReference prev =
+                map.put(key, new NodeSoftReference(key, value, refQ));
+            return prev == null? null: prev.get();
+        }
+
+        @Override
+        public Node putIfAbsent(String key, Node value) {
+            cleanup();
+            NodeSoftReference prev =
+                map.putIfAbsent(key, new NodeSoftReference(key, value, refQ));
+            return prev == null? null: prev.get();
+        }
+
+        @Override
+        public Node get(Object key) {
+            cleanup();
+            NodeSoftReference nodeRef = map.get(key);
+            if (nodeRef == null) {
+                return null;
+            }
+            if (nodeRef.get() == null) {
+                // value has been garbage collected, remove entry in map
+                map.remove(key);
+                return null;
+            }
+            return nodeRef.get();
+        }
+    }
+
+    private static final SoftConcurrentHashMap cache = 
+                new SoftConcurrentHashMap();
     private FunctionMapper fnMapper;
-
     private VariableMapper varMapper;
-
     private String expression;
 
     /**
@@ -143,7 +171,7 @@ public final class ExpressionBuilder implements NodeVisitor {
             throw new ELException(MessageFactory.get("error.null"));
         }
 
-        Node n = (Node) cache.get(expr);
+        Node n = cache.get(expr);
         if (n == null) {
             try {
                 n = (new ELParser(
