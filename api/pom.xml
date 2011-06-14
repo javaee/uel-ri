@@ -40,17 +40,67 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.glassfish.web</groupId>
-        <artifactId>el</artifactId>    
-       <version>1.1.2-SNAPSHOT</version>
+        <groupId>net.java</groupId>
+        <artifactId>jvnet-parent</artifactId>
+        <version>1</version>
     </parent>
+
     <groupId>javax.el</groupId>
     <artifactId>javax.el-api</artifactId>
+    <version>1.1.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Expression Language API</name>
 
+    <developers>
+        <developer>
+            <id>kchung</id>
+            <name>Kin Man Chung</name>
+            <url>http://blogs.sun.com/kchung/</url>
+            <organization>Oracle Corporation</organization>
+            <roles>
+                <role>lead</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <url>http://uel.java.net</url>
+    <organization>
+        <name>GlassFish Community</name>
+        <url>http://glassfish.org</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>CDDL + GPLv2 with classpath exception</name>
+            <url>https://glassfish.dev.java.net/nonav/public/CDDL+GPL.html</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    <issueManagement>
+        <system>jira</system>
+        <url>http://java.net/jira/browse/UEL</url>
+    </issueManagement>
+    <mailingLists>
+        <mailingList>
+            <name>EL Developer</name>
+            <archive>dev@uel.java.net</archive>
+        </mailingList>
+    </mailingLists>
+    <scm>
+        <connection>scm:svn:https://svn.java.net/svn/uel~svn/branches/1.1.2/api</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/uel~svn/branches/1.1.2/api</developerConnection>
+        <url>http://java.net/projects/uel/sources/svn/show</url>
+    </scm>
+
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.5</source>
+                        <target>1.5</target>
+                    </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -67,7 +117,7 @@
                                     <packages>javax.el</packages>
                                 </group>
                             </groups>
-                            <bottom>&lt;font size="-1"&gt;Copyright 2003 Sun Microsystems, Inc. All Rights Reserved.&lt;/font&gt;</bottom>
+                            <bottom>&lt;font size="-1"&gt;Copyright 2011 Sun Microsystems, Inc. All Rights Reserved.&lt;/font&gt;</bottom>
                         </configuration>
                     </execution>
                 </executions>

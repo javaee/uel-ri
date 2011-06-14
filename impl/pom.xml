@@ -40,13 +40,56 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.web</groupId>
-        <artifactId>el</artifactId>
-        <version>1.1.2-SNAPSHOT</version>
+        <groupId>net.java</groupId>
+        <artifactId>jvnet-parent</artifactId>
+        <version>1</version>
     </parent>
+    <groupId>org.glassfish.web</groupId>
     <artifactId>javax.el</artifactId>
+    <version>1.1.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Expression Language Implementation</name>
+
+    <developers>
+        <developer>
+            <id>kchung</id>
+            <name>Kin Man Chung</name>
+            <url>http://blogs.sun.com/kchung/</url>
+            <organization>Oracle Corporation</organization>
+            <roles>
+                <role>lead</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <url>http://uel.java.net</url>
+    <organization>
+        <name>GlassFish Community</name>
+        <url>http://glassfish.org</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>CDDL + GPLv2 with classpath exception</name>
+            <url>https://glassfish.dev.java.net/nonav/public/CDDL+GPL.html</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    <issueManagement>
+        <system>jira</system>
+        <url>http://java.net/jira/browse/UEL</url>
+    </issueManagement>
+    <mailingLists>
+        <mailingList>
+            <name>EL Developer</name>
+            <archive>dev@uel.java.net</archive>
+        </mailingList>
+    </mailingLists>
+    <scm>
+        <connection>scm:svn:https://svn.java.net/svn/uel~svn/branches/1.1.2/impl</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/uel~svn/branches/1.1.2/impl</developerConnection>
+        <url>http://java.net/projects/uel/sources/svn/show</url>
+    </scm>
 
     <build>
         <plugins>
