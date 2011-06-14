@@ -47,7 +47,7 @@
 
     <groupId>javax.el</groupId>
     <artifactId>javax.el-api</artifactId>
-    <version>1.1.2-SNAPSHOT</version>
+    <version>1.1.2</version>
     <packaging>jar</packaging>
     <name>Expression Language API</name>
 
@@ -87,9 +87,9 @@
         </mailingList>
     </mailingLists>
     <scm>
-        <connection>scm:svn:https://svn.java.net/svn/uel~svn/branches/1.1.2/api</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/uel~svn/branches/1.1.2/api</developerConnection>
-        <url>http://java.net/projects/uel/sources/svn/show</url>
+        <connection>scm:svn:https://svn.java.net/svn/uel~svn/tags/javax.el-api-1.1.2</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/uel~svn/tags/javax.el-api-1.1.2</developerConnection>
+        <url>http://java.net/projects/uel/sources/svn/show/tags/javax.el-api-1.1.2</url>
     </scm>
 
     <build>
