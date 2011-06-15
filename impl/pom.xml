@@ -45,7 +45,7 @@
     </parent>
     <groupId>org.glassfish.web</groupId>
     <artifactId>javax.el</artifactId>
-    <version>1.1.2</version>
+    <version>1.1.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Expression Language Implementation</name>
 
@@ -85,9 +85,9 @@
         </mailingList>
     </mailingLists>
     <scm>
-        <connection>scm:svn:https://svn.java.net/svn/uel~svn/tags/javax.el-1.1.2</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/uel~svn/tags/javax.el-1.1.2</developerConnection>
-        <url>http://java.net/projects/uel/sources/svn/show/tags/javax.el-1.1.2</url>
+        <connection>scm:svn:https://svn.java.net/svn/uel~svn/branches/1.1.2/impl</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/uel~svn/branches/1.1.2/impl</developerConnection>
+        <url>http://java.net/projects/uel/sources/svn/show/branches/1.1.2/impl</url>
     </scm>
 
     <build>
