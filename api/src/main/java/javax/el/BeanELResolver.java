@@ -657,7 +657,7 @@ public class BeanELResolver extends ELResolver {
         BeanProperties bps = properties.get(baseClass);
         if (bps == null) {
             bps = new BeanProperties(baseClass);
-            properties.putIfAbsent(baseClass, bps);
+            properties.put(baseClass, bps);
         }
         BeanProperty bp = bps.getBeanProperty(property);
         if (bp == null) {
