@@ -41,6 +41,7 @@
 /*
 	Author:	Jacob Hookom
 	Email:	jacob at hookom.net
+        Author: Kin-man Chung
 */
 
 /* == Option Declaration == */
@@ -127,7 +128,7 @@ void Expression() : {}
  */
 void Choice() : {}
 {
-	Or() (<QUESTIONMARK> Choice() <COLON> Choice() #Choice(3))*
+	Or() (<QUESTIONMARK> Choice() <COLON> Choice() #Choice(3))?
 }
 
 /*
@@ -255,33 +256,14 @@ void ValueSuffix() : {}
 
 /*
  * DotSuffix
- * Dot Property
+ * Dot Property and Dot Method
  */
-void DotSuffix() : {}
+void DotSuffix() #DotSuffix : { Token t = null; }
 {
-        <DOT> (
-                        LOOKAHEAD(2) MethodSuffix()
-                 |      LOOKAHEAD(2) PropertySuffix()
-        )
-}
-
-/*
- * PropertySuffix
- * Dot Property
- */
-void PropertySuffix() #PropertySuffix : { Token t = null; }
-{
-        t=<IDENTIFIER> { jjtThis.setImage(t.image); }
-}
-
-/*
- * MethodSuffix
- * Method Suffix
- */
-void MethodSuffix() #MethodSuffix : { Token t = null; }
-{
-        t=<IDENTIFIER> { jjtThis.setImage(t.image); }
-        <LPAREN> (Expression() (<COMMA> Expression())*)? <RPAREN>
+        <DOT> t=<IDENTIFIER> { jjtThis.setImage(t.image); }
+        ( (<LPAREN> (Expression() (<COMMA> Expression())*)? <RPAREN> )
+            #MethodArguments
+        )?
 }
 
 /*
@@ -291,6 +273,9 @@ void MethodSuffix() #MethodSuffix : { Token t = null; }
 void BracketSuffix() #BracketSuffix : {}
 {
 	<LBRACK> Expression() <RBRACK>
+        ( (<LPAREN> (Expression() (<COMMA> Expression())*)? <RPAREN> )
+            #MethodArguments
+        )?
 }
 
 /*
