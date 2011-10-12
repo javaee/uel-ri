@@ -720,12 +720,20 @@ public class BeanELResolver extends ELResolver {
         throw new MethodNotFoundException("Method " + method + " not found");
     }
 
+    static private ExpressionFactory expressionFactory;
+    static private ExpressionFactory getExpressionFactory() {
+        if (expressionFactory == null) {
+            expressionFactory = ExpressionFactory.newInstance();
+        }
+        return expressionFactory;
+    }
+
     private Object invokeMethod(Method m, Object base, Object[] params) {
 
         Class[] parameterTypes = m.getParameterTypes();
         Object[] parameters = null;
         if (parameterTypes.length > 0) {
-            ExpressionFactory exprFactory = ExpressionFactory.newInstance();
+            ExpressionFactory exprFactory = getExpressionFactory();
             if (m.isVarArgs()) {
                 // TODO
             } else {
