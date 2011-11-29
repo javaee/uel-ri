@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,6 +62,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.ref.SoftReference;
+import java.lang.ref.ReferenceQueue;
 import java.beans.FeatureDescriptor;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
@@ -112,11 +113,68 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class BeanELResolver extends ELResolver {
 
+    static private class BPSoftReference extends SoftReference<BeanProperties> {
+        final Class<?> key;
+        BPSoftReference(Class<?> key, BeanProperties beanProperties,
+                        ReferenceQueue<BeanProperties> refQ) {
+            super(beanProperties, refQ);
+            this.key = key;
+        }
+    }
+
+    static private class SoftConcurrentHashMap extends
+                ConcurrentHashMap<Class<?>, BeanProperties> {
+
+        private static final int CACHE_INIT_SIZE = 1024;
+        private ConcurrentHashMap<Class<?>, BPSoftReference> map =
+            new ConcurrentHashMap<Class<?>, BPSoftReference>(CACHE_INIT_SIZE);
+        private ReferenceQueue<BeanProperties> refQ =
+                        new ReferenceQueue<BeanProperties>();
+
+        // Remove map entries that have been placed on the queue by GC.
+        private void cleanup() {
+            BPSoftReference BPRef = null;
+            while ((BPRef = (BPSoftReference)refQ.poll()) != null) {
+                map.remove(BPRef.key);
+            }
+        }
+
+        @Override
+        public BeanProperties put(Class<?> key, BeanProperties value) {
+            cleanup();
+            BPSoftReference prev =
+                map.put(key, new BPSoftReference(key, value, refQ));
+            return prev == null? null: prev.get();
+        }
+
+        @Override
+        public BeanProperties putIfAbsent(Class<?> key, BeanProperties value) {
+            cleanup();
+            BPSoftReference prev =
+                map.putIfAbsent(key, new BPSoftReference(key, value, refQ));
+            return prev == null? null: prev.get();
+        }
+
+        @Override
+        public BeanProperties get(Object key) {
+            cleanup();
+            BPSoftReference BPRef = map.get(key);
+            if (BPRef == null) {
+                return null;
+            }
+            if (BPRef.get() == null) {
+                // value has been garbage collected, remove entry in map
+                map.remove(key);
+                return null;
+            }
+            return BPRef.get();
+        }
+    }
+
     private boolean isReadOnly;
 
-     private static final int CACHE_SIZE = 1024;
-     private static final ConcurrentHashMap<Class, BeanProperties> properties =
-         new ConcurrentHashMap<Class, BeanProperties>(CACHE_SIZE);
+    private static final SoftConcurrentHashMap properties =
+                new SoftConcurrentHashMap();
 
     /*
      * Defines a property for a bean.
@@ -668,33 +726,6 @@ public class BeanELResolver extends ELResolver {
                                            property}));
         }
         return bp;
-    }
-
-    private void removeFromMap(Map<Class, BeanProperties> map,
-                               ClassLoader classloader) {
-        Iterator<Class> iter = map.keySet().iterator();
-        while (iter.hasNext()) {
-            Class mbeanClass = iter.next();
-            if (classloader.equals(mbeanClass.getClassLoader())) {
-                iter.remove();
-            }
-        }
-
-    }
-
-    /*
-     * This method is not part of the API, though it can be used (reflectively)
-     * by clients of this class to remove entries from the cache when the beans
-     * are being unloaded.
-     *
-     * A note about why WeakHashMap is not used.  Measurements has shown 
-     * that ConcurrentHashMap is much more scalable than synchronized
-     * WeakHashMap.  A manual purge seems to be a good compromise.
-     *
-     * @param classloader The classLoader used to load the beans.
-     */
-    private void purgeBeanClasses(ClassLoader classloader) {
-        removeFromMap(properties, classloader);
     }
 
     private Method findMethod(Object base, String method,
