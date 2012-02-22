@@ -90,7 +90,7 @@
         <bundle.symbolicName>org.glassfish.web.javax.el</bundle.symbolicName>
         <vendorName>Oracle Corporation</vendorName>
         <findbugs.version>2.4.0</findbugs.version>
-        <findbugs.exclude />
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
         <findbugs.threshold>High</findbugs.threshold>
     </properties>
 
