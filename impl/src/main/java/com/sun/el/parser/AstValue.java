@@ -62,6 +62,9 @@ import com.sun.el.util.ReflectionUtil;
  */
 public final class AstValue extends SimpleNode {
 
+    static boolean COERCE_TO_ZERO = "true".equals(System.getProperty(
+            "org.glassfish.el.COERCE_TO_ZERO", "true"));
+
     protected static class Target {
         protected Object base;
         protected Node suffixNode;
@@ -210,14 +213,25 @@ public final class AstValue extends SimpleNode {
         Object property = t.suffixNode.getValue(ctx);
         ctx.setPropertyResolved(false);
         ELResolver elResolver = ctx.getELResolver();
-        if (value != null) {
-            value = ELSupport.coerceToType(value,
-                        elResolver.getType(ctx, t.base, property));
+        Class<?> targetClass = elResolver.getType(ctx, t.base, property);
+        if (COERCE_TO_ZERO == true || !isAssignable(value, targetClass)) {
+            value = ELSupport.coerceToType(value, targetClass);
         }
         elResolver.setValue(ctx, t.base, property, value);
         if (! ctx.isPropertyResolved()) {
             ELSupport.throwUnhandled(t.base, property);
         }
+    }
+
+    private boolean isAssignable(Object value, Class<?> targetClass) {
+        if (targetClass == null) {
+            return false;
+        } else if (value != null && targetClass.isPrimitive()) {
+            return false;
+        } else if (value != null && !targetClass.isInstance(value)) {
+            return false;
+        }
+        return true;
     }
 
     public MethodInfo getMethodInfo(EvaluationContext ctx, Class[] paramTypes)
