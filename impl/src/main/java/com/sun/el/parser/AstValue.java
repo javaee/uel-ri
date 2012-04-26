@@ -62,9 +62,6 @@ import com.sun.el.util.ReflectionUtil;
  */
 public final class AstValue extends SimpleNode {
 
-    static boolean COERCE_TO_ZERO = "true".equals(System.getProperty(
-            "org.glassfish.el.COERCE_TO_ZERO", "true"));
-
     protected static class Target {
         protected Object base;
         protected Node suffixNode;
