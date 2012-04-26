@@ -214,24 +214,13 @@ public final class AstValue extends SimpleNode {
         ctx.setPropertyResolved(false);
         ELResolver elResolver = ctx.getELResolver();
         Class<?> targetClass = elResolver.getType(ctx, t.base, property);
-        if (COERCE_TO_ZERO == true || !isAssignable(value, targetClass)) {
+        if (value != null || targetClass.isPrimitive()) {
             value = ELSupport.coerceToType(value, targetClass);
         }
         elResolver.setValue(ctx, t.base, property, value);
         if (! ctx.isPropertyResolved()) {
             ELSupport.throwUnhandled(t.base, property);
         }
-    }
-
-    private boolean isAssignable(Object value, Class<?> targetClass) {
-        if (targetClass == null) {
-            return false;
-        } else if (value != null && targetClass.isPrimitive()) {
-            return false;
-        } else if (value != null && !targetClass.isInstance(value)) {
-            return false;
-        }
-        return true;
     }
 
     public MethodInfo getMethodInfo(EvaluationContext ctx, Class[] paramTypes)
@@ -276,7 +265,6 @@ public final class AstValue extends SimpleNode {
 
     @Override
     public boolean isParametersProvided() {
-        // XXX
-        return true;
+        return getArguments(this.children[this.jjtGetNumChildren()-1]) != null;
     }
 }
