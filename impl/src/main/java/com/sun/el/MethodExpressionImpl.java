@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,7 @@ import javax.el.MethodInfo;
 import javax.el.MethodNotFoundException;
 import javax.el.PropertyNotFoundException;
 import javax.el.VariableMapper;
+import javax.el.EvaluationListener;
 
 import com.sun.el.lang.ELSupport;
 import com.sun.el.lang.EvaluationContext;
@@ -233,7 +234,7 @@ public final class MethodExpressionImpl extends MethodExpression implements
     }
 
     /**
-     * @return
+     * @return The Node for the expression
      * @throws ELException
      */
     private Node getNode() throws ELException {
@@ -299,7 +300,10 @@ public final class MethodExpressionImpl extends MethodExpression implements
             ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
                 this.varMapper);
-        return this.getNode().invoke(ctx, this.paramTypes, params);
+        ctx.notifyBeforeEvaluation(this.expr);
+        Object obj = this.getNode().invoke(ctx, this.paramTypes, params);
+        ctx.notifyAfterEvaluation(this.expr);
+        return obj;
     }
 
     /*
@@ -339,7 +343,7 @@ public final class MethodExpressionImpl extends MethodExpression implements
     }
 
     @Override
-    public boolean isParmetersProvided() {
+    public boolean isParametersProvided() {
         return this.getNode().isParametersProvided();
     }
 }

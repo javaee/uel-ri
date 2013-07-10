@@ -231,8 +231,7 @@ public class CompositeELResolver extends ELResolver {
      * @param context The context of this evaluation.
      * @param base The bean on which to invoke the method
      * @param method The simple name of the method to invoke.
-     *     Will be coerced to a <code>String</code>.  If method is
-     *     "<init>"or "<clinit>" a NoSuchMethodException is raised.
+     *     Will be coerced to a <code>String</code>.
      * @param paramTypes An array of Class objects identifying the
      *     method's formal parameter types, in declared order.
      *     Use an empty array if the method has no parameters.
@@ -543,6 +542,36 @@ public class CompositeELResolver extends ELResolver {
         return commonPropertyType;
     }
 
+    /**
+     * Converts an object to a specific type.
+     *
+     * <p>An <code>ELException</code> is thrown if an error occurs during
+     * the conversion.</p>
+     *
+     * @param context The context of this evaluation.
+     * @param obj The object to convert.
+     * @param targetType The target type for the convertion.
+     * @throws ELException thrown if errors occur.
+     *
+     * @since EL 3.0
+     */
+    @Override
+    public Object convertToType(ELContext context,
+                                Object obj,
+                                Class<?> targetType) {
+
+        context.setPropertyResolved(false);
+
+        Object value = null;
+        for (int i = 0; i < size; i++) {
+            value = elResolvers[i].convertToType(context, obj, targetType);
+            if (context.isPropertyResolved()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
     private ELResolver[] elResolvers;
     private int size;
 
@@ -584,7 +613,7 @@ public class CompositeELResolver extends ELResolver {
         public FeatureDescriptor next() {
             if (propertyIter == null || !propertyIter.hasNext()) {
                 while (index < size) {
-                    ELResolver elResolver = resolvers[index++];;
+                    ELResolver elResolver = resolvers[index++];
                     propertyIter = elResolver.getFeatureDescriptors(
                         context, base);
                     if (propertyIter != null) {

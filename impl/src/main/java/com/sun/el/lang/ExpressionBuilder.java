@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,6 +66,7 @@ import com.sun.el.parser.AstDynamicExpression;
 import com.sun.el.parser.AstFunction;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstLiteralExpression;
+import com.sun.el.parser.AstMethodArguments;
 import com.sun.el.parser.AstValue;
 import com.sun.el.parser.ELParser;
 import com.sun.el.parser.Node;
@@ -215,6 +216,13 @@ public final class ExpressionBuilder implements NodeVisitor {
         return n;
     }
 
+    /**
+     * Scan the expression nodes and captures the functions and variables used
+     * in this expression.  This ensures that any changes to the functions or
+     * variables mappings during the expression will not affect the evaluation
+     * of this expression, as the functions and variables are bound and
+     * resolved at parse time, as specified in the spec.
+     */
     private void prepare(Node node) throws ELException {
         node.accept(this);
         if (this.fnMapper instanceof FunctionMapperFactory) {
@@ -242,8 +250,21 @@ public final class ExpressionBuilder implements NodeVisitor {
      */
     public void visit(Node node) throws ELException {
         if (node instanceof AstFunction) {
-
             AstFunction funcNode = (AstFunction) node;
+            if ((funcNode.getPrefix().length() == 0) &&
+                (this.fnMapper == null || fnMapper.resolveFunction(
+                                              funcNode.getPrefix(),
+                                              funcNode.getLocalName()) == null)) {
+                // This can be a call to a LambdaExpression.  The target
+                // of the call is a bean or an EL variable.  Capture
+                // the variable name in the variable mapper if it is an
+                // variable.  The decision to invoke the static method or
+                // the LambdaExpression will be made at runtime.
+                if (this.varMapper != null) {
+                    this.varMapper.resolveVariable(funcNode.getLocalName());
+                }
+                return;
+            }
 
             if (this.fnMapper == null) {
                 throw new ELException(MessageFactory.get("error.fnMapper.null"));
@@ -255,10 +276,11 @@ public final class ExpressionBuilder implements NodeVisitor {
                         "error.fnMapper.method", funcNode.getOutputName()));
             }
             int pcnt = m.getParameterTypes().length;
-            if (node.jjtGetNumChildren() != pcnt) {
+            int acnt = ((AstMethodArguments)node.jjtGetChild(0)).getParameterCount();
+            if (acnt != pcnt) {
                 throw new ELException(MessageFactory.get(
                         "error.fnMapper.paramcount", funcNode.getOutputName(),
-                        "" + pcnt, "" + node.jjtGetNumChildren()));
+                        "" + pcnt, "" + acnt));
             }
         } else if (node instanceof AstIdentifier && this.varMapper != null) {
             String variable = ((AstIdentifier) node).getImage();
@@ -280,8 +302,8 @@ public final class ExpressionBuilder implements NodeVisitor {
         Node n = this.build();
         if (n instanceof AstValue || n instanceof AstIdentifier) {
             return new MethodExpressionImpl(expression, n,
-                    this.fnMapper, this.varMapper, expectedReturnType,
-                    expectedParamTypes);
+                    this.fnMapper, this.varMapper,
+                    expectedReturnType, expectedParamTypes);
         } else if (n instanceof AstLiteralExpression) {
             return new MethodExpressionLiteral(expression, expectedReturnType,
                     expectedParamTypes);

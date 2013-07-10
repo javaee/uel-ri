@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,23 @@
 
 package com.sun.el.lang;
 
+import java.util.EventListener;
+import java.util.List;
+import java.util.Map;
+
 import javax.el.ELContext;
 import javax.el.ELResolver;
 import javax.el.FunctionMapper;
 import javax.el.VariableMapper;
+import javax.el.TypeConverter;
+import javax.el.ImportHandler;
+import javax.el.EvaluationListener;
 
+/**
+ * The context for EL expression evaluation.  This wrapper ELContext captures
+ * the function mapper and the variable mapper at the point when the epxression
+ * is parsed, and only for those functions and variable used in the expression.
+ */
 public final class EvaluationContext extends ELContext {
 
     private final ELContext elContext;
@@ -64,31 +76,98 @@ public final class EvaluationContext extends ELContext {
         return this.elContext;
     }
 
+    @Override
     public FunctionMapper getFunctionMapper() {
         return this.fnMapper;
     }
 
+    @Override
     public VariableMapper getVariableMapper() {
         return this.varMapper;
     }
 
+    @Override
     public Object getContext(Class key) {
         return this.elContext.getContext(key);
     }
 
+    @Override
     public ELResolver getELResolver() {
         return this.elContext.getELResolver();
     }
 
+    @Override
     public boolean isPropertyResolved() {
         return this.elContext.isPropertyResolved();
     }
 
+    @Override
     public void putContext(Class key, Object contextObject) {
         this.elContext.putContext(key, contextObject);
     }
 
+    @Override
     public void setPropertyResolved(boolean resolved) {
         this.elContext.setPropertyResolved(resolved);
+    }
+
+    @Override
+    public void setPropertyResolved(Object base, Object property) {
+        this.elContext.setPropertyResolved(base, property);
+    }
+
+    @Override
+    public void addEvaluationListener(EvaluationListener listener) {
+        this.elContext.addEvaluationListener(listener);
+    }
+
+    @Override
+    public List<EvaluationListener> getEvaluationListeners() {
+        return this.elContext.getEvaluationListeners();
+    }
+
+    @Override
+    public void notifyBeforeEvaluation(String expr) {
+        this.elContext.notifyBeforeEvaluation(expr);
+    }
+
+    @Override
+    public void notifyAfterEvaluation(String expr) {
+        this.elContext.notifyAfterEvaluation(expr);
+    }
+
+    @Override
+    public void notifyPropertyResolved(Object base, Object property) {
+        this.elContext.notifyPropertyResolved(base, property);
+    }
+
+    @Override
+    public boolean isLambdaArgument(String arg) {
+        return this.elContext.isLambdaArgument(arg);
+    }
+
+    @Override
+    public Object getLambdaArgument(String arg) {
+        return this.elContext.getLambdaArgument(arg);
+    }
+
+    @Override
+    public void enterLambdaScope(Map<String,Object> args) {
+        this.elContext.enterLambdaScope(args);
+    }
+
+    @Override
+    public void exitLambdaScope() {
+        this.elContext.exitLambdaScope();
+    }
+
+    @Override
+    public Object convertToType(Object obj, Class<?> targetType) {
+         return this.elContext.convertToType(obj, targetType);
+    }
+
+    @Override
+    public ImportHandler getImportHandler() {
+        return this.elContext.getImportHandler();
     }
 }

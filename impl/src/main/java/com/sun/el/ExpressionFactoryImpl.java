@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,15 +40,21 @@
 
 package com.sun.el;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.lang.reflect.Method;
+
 import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.ExpressionFactory;
 import javax.el.MethodExpression;
 import javax.el.ValueExpression;
+import javax.el.ELResolver;
 
 import com.sun.el.lang.ExpressionBuilder;
 import com.sun.el.lang.ELSupport;
 import com.sun.el.util.MessageFactory;
+import com.sun.el.stream.StreamELResolver;
 
 /**
  * @see javax.el.ExpressionFactory
@@ -81,7 +87,7 @@ public class ExpressionFactoryImpl extends ExpressionFactory {
         ExpressionBuilder builder = new ExpressionBuilder(expression, context);
         MethodExpression me = builder.createMethodExpression(expectedReturnType,
                 expectedParamTypes);
-        if (expectedParamTypes == null && !me.isParmetersProvided()) {
+        if (expectedParamTypes == null && !me.isParametersProvided()) {
             throw new NullPointerException(MessageFactory
                     .get("error.method.nullParms"));
         }
@@ -105,5 +111,27 @@ public class ExpressionFactoryImpl extends ExpressionFactory {
                     .get("error.value.expectedType"));
         }
         return new ValueExpressionLiteral(instance, expectedType);
+    }
+
+    @Override
+    public ELResolver getStreamELResolver() {
+        return new StreamELResolver();
+    }
+
+    @Override
+    public Map<String, Method> getInitFunctionMap() {
+        Map<String, Method> funcs = new HashMap<String, Method>();
+/*
+        Class<Generation> genClass = Generation.class;
+        try {
+            funcs.put("collections:range", genClass.getMethod("range",
+                    new Class<?>[] {Integer.TYPE, Integer.TYPE}));
+            funcs.put("collections:repeat", genClass.getMethod("repeat",
+                    new Class<?>[] {Object.class, Integer.TYPE}));
+        } catch (NoSuchMethodException ex) {
+            // Should not happen
+        }
+*/
+        return funcs;
     }
 }

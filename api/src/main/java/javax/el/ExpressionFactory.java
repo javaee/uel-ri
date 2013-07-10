@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,13 +58,27 @@
 
 package javax.el;
 
+import java.util.Map;
+import java.lang.reflect.Method;
+
+import java.util.Properties;
+
 /**
- * Parses a <code>String</code> into a {@link ValueExpression} or
- * {@link MethodExpression} instance for later evaluation.
+ * Provides an implementation for creating and evaluating EL expressions.
  *
  * <p>Classes that implement the EL expression language expose their
- * functionality via this abstract class.
- * The {@link #newInstance} method can be used to obtain an
+ * functionality via this abstract class.  An implementation supports the
+ * following functionalities.
+ * <ul>
+ *   <li>
+ *     Parses a <code>String</code> into a {@link ValueExpression} or
+ *     {@link MethodExpression} instance for later evaluation.
+ *   </li>
+ *   <li>Implements an <code>ELResolver</code> for query operators</li>
+ *   <li>Provides a default type coercion</li>
+ * </ul>
+ * </p>
+ * <p>The {@link #newInstance} method can be used to obtain an
  * instance of the implementation.
  * Technologies such as
  * JavaServer Pages and JavaServer Faces provide access to an
@@ -74,10 +88,6 @@ package javax.el;
  * that evaluate to values (both l-values and r-values are supported).
  * The {@link #createMethodExpression} method is used to parse expressions
  * that evaluate to a reference to a method on an object.</p>
- *
- * <p>Unlike previous incarnations of this API, there is no way to parse
- * and evaluate an expression in one single step. The expression needs to first
- * be parsed, and then evaluated.</p>
  *
  * <p>Resolution of model objects is performed at evaluation time, via the
  * {@link ELResolver} associated with the {@link ELContext} passed to
@@ -129,8 +139,6 @@ package javax.el;
  *
  * @since JSP 2.1
  */
-
-import java.util.Properties;
 
 public abstract class ExpressionFactory {
     
@@ -312,7 +320,8 @@ public abstract class ExpressionFactory {
     
     /**
      * Coerces an object to a specific type according to the
-     * EL type conversion rules.
+     * EL type conversion rules.  The custom type conversions in the
+     * <code>ELResolver</code>s are not considered.
      *
      * <p>An <code>ELException</code> is thrown if an error results from
      * applying the conversion rules.
@@ -327,6 +336,39 @@ public abstract class ExpressionFactory {
             Object obj,
             Class<?> targetType);
     
+    /**
+     * Retrieves an ELResolver that implements the operations in collections.
+     *
+     * <p>This ELResolver resolves the method invocation on the pair
+     * (<code>base</code>, <code>property</code>) when <code>base</code> is
+     * a <code>Collection</code> or a <code>Map</code>, and
+     * <code>property</code> is the name of the operation.
+     * <p>See EL.2 for detailed descriptions of these operators, their
+     * arguments, and return values.</p>
+     *
+     * @return The <code>ELResolver</code> that implements the Query Operators.
+     *
+     * @since EL 3.0
+     */
+    public ELResolver getStreamELResolver() {
+        return null;
+    }
+
+    /**
+     * Retrieve a function map containing a pre-configured function
+     * mapping.  It must include the following functions.
+     * <ul>
+     * <li>linq:range</li>
+     * <li>linq:repeat</li>
+     * <li>linq:_empty</li>
+     * </ul>
+     * @return A initial map for functions, null if there is none.
+     *
+     * @since EL 3.0
+     */
+    public Map<String, Method> getInitFunctionMap() {
+        return null;
+    }
 }
 
 

@@ -58,6 +58,10 @@
 
 package javax.el;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Locale;
@@ -75,6 +79,7 @@ import java.util.ResourceBundle;
  * are implementation private.</p>
  *
  * @author edburns
+ * @author Kin-man Chung
  */
 class ELUtil {
     
@@ -85,6 +90,9 @@ class ELUtil {
     private ELUtil() {
     }
     
+    public static ExpressionFactory exprFactory =
+        ExpressionFactory.newInstance();
+
     /**
      * <p>The <code>ThreadLocal</code> variable used to record the
      * {@link javax.faces.context.FacesContext} instance for each
@@ -208,6 +216,118 @@ class ELUtil {
         
         return result;
     }
+
+    static ExpressionFactory getExpressionFactory() {
+        return exprFactory;
+    }
         
-    
+    static Constructor<?> findConstructor(Class<?> klass,
+                                  Class<?>[] paramTypes,
+                                  Object[] params) {
+
+        if (paramTypes != null) {
+            try {
+                Constructor<?> c = klass.getConstructor(paramTypes);
+                if (Modifier.isPublic(c.getModifiers())) {
+                    return c;
+                }
+            } catch (java.lang.NoSuchMethodException ex) {
+            }
+            throw new MethodNotFoundException("The constructor for class " +
+                           klass + " not found or accessible");
+        }
+
+        int paramCount = (params == null)? 0: params.length;
+        for (Constructor<?> c: klass.getConstructors()) {
+            if (c.isVarArgs() || c.getParameterTypes().length==paramCount) {
+                return c;
+            }
+        }
+        throw new MethodNotFoundException("The constructor for class " +
+                     klass +  " not found");
+    }
+
+    static Object invokeConstructor(ELContext context,
+                                    Constructor<?> c,
+                                    Object[] params) {
+        Class[] parameterTypes = c.getParameterTypes();
+        Object[] parameters = null;
+        if (parameterTypes.length > 0) {
+            if (c.isVarArgs()) {
+                // TODO
+            } else {
+                parameters = new Object[parameterTypes.length];
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    parameters[i] = context.convertToType(params[i],
+                                                          parameterTypes[i]);
+                }
+            }
+        }
+        try {
+            return c.newInstance(parameters);
+        } catch (IllegalAccessException iae) {
+            throw new ELException(iae);
+        } catch (InvocationTargetException ite) {
+            throw new ELException(ite.getCause());
+        } catch (InstantiationException ie) {
+            throw new ELException(ie.getCause());
+        }
+    }
+
+    static Method findMethod(Class<?> klass,
+                             String method,
+                             Class<?>[] paramTypes,
+                             Object[] params,
+                             boolean staticOnly) {
+
+        if (paramTypes != null) {
+            try {
+                Method m = klass.getMethod(method, paramTypes);
+                int mod = m.getModifiers();
+                if (Modifier.isPublic(mod) && 
+                    (!staticOnly || Modifier.isStatic(mod))) {
+                    return m;
+                }
+            } catch (java.lang.NoSuchMethodException ex) {
+            }
+            throw new MethodNotFoundException("Method " + method +
+                           "for class " + klass +
+                           " not found or accessible");
+        }
+
+        int paramCount = (params == null)? 0: params.length;
+        for (Method m: klass.getMethods()) {
+            if (m.getName().equals(method) && (
+                         m.isVarArgs() ||
+                         m.getParameterTypes().length==paramCount)){
+                return m;
+            }
+        }
+        throw new MethodNotFoundException("Method " + method + " not found");
+    }
+
+    static Object invokeMethod(ELContext context,
+                               Method m, Object base, Object[] params) {
+
+        Class[] parameterTypes = m.getParameterTypes();
+        Object[] parameters = null;
+        if (parameterTypes.length > 0) {
+            if (m.isVarArgs()) {
+                // TODO
+            } else {
+                parameters = new Object[parameterTypes.length];
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    parameters[i] = context.convertToType(params[i],
+                                                          parameterTypes[i]);
+                }
+            }
+        }
+        try {
+            return m.invoke(base, parameters);
+        } catch (IllegalAccessException iae) {
+            throw new ELException(iae);
+        } catch (InvocationTargetException ite) {
+            throw new ELException(ite.getCause());
+        }
+    }
 }

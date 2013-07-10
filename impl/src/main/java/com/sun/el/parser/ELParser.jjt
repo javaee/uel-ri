@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,8 @@
 /*
 	Author:	Jacob Hookom
 	Email:	jacob at hookom.net
-        Author: Kin-man Chung
+
+        Author: Kin-man Chung (EL 2.2 and EL 3.0)
 */
 
 /* == Option Declaration == */
@@ -101,7 +102,7 @@ void LiteralExpression() #LiteralExpression : { Token t = null; }
  */
 void DeferredExpression() #DeferredExpression : {}
 {
-	<START_DEFERRED_EXPRESSION> Expression() <END_EXPRESSION> 
+	<START_DEFERRED_EXPRESSION> Expression() <RCURL> 
 }
 
 /*
@@ -110,21 +111,56 @@ void DeferredExpression() #DeferredExpression : {}
  */
 void DynamicExpression() #DynamicExpression : {}
 {
-	<START_DYNAMIC_EXPRESSION> Expression() <END_EXPRESSION> 
+	<START_DYNAMIC_EXPRESSION> Expression() <RCURL> 
 }
 
 /*
  * Expression
- * EL Expression Language Root, goes to Choice
+ * EL Expression Language Root
  */
 void Expression() : {}
 {
-	Choice()
+        SemiColon()
+}
+
+/*
+ * SemiColon
+ */
+void SemiColon() : {}
+{
+        Assignment() (<SEMICOLON> Assignment() #SemiColon(2) )*
+}
+
+/*
+ * Assignment
+ * For '=', right associatve, then LambdaExpression or Choice or Assignment
+ */
+void Assignment() : {}
+{
+        LOOKAHEAD(3) LambdaExpression() |
+        Choice() (<ASSIGN> Assignment() #Assign(2) )?
+}
+
+/*
+ * LambdaExpression
+ */
+void LambdaExpression() #LambdaExpression : {}
+{
+       LambdaParameters() <ARROW>
+       (LOOKAHEAD(3) LambdaExpression() | Choice() )
+}
+
+void LambdaParameters() #LambdaParameters: {}
+{
+       Identifier()
+       | <LPAREN>
+            (Identifier() (<COMMA> Identifier())*)?
+         <RPAREN>
 }
 
 /*
  * Choice
- * For Choice markup a ? b : c, then Or
+ * For Choice markup a ? b : c, right associative
  */
 void Choice() : {}
 {
@@ -169,16 +205,25 @@ void Equality() : {}
  */
 void Compare() : {}
 {
-	Math()
+	Concatenation()
 	(
-		((<LT0>|<LT1>) Math() #LessThan(2))
+		((<LT0>|<LT1>) Concatenation() #LessThan(2))
 	|
-		((<GT0>|<GT1>) Math() #GreaterThan(2))
+		((<GT0>|<GT1>) Concatenation() #GreaterThan(2))
 	|
-		((<LE0>|<LE1>) Math() #LessThanEqual(2))
+		((<LE0>|<LE1>) Concatenation() #LessThanEqual(2))
 	|
-		((<GE0>|<GE1>) Math() #GreaterThanEqual(2))
+		((<GE0>|<GE1>) Concatenation() #GreaterThanEqual(2))
 	)*
+}
+
+/*
+ * Concatenation
+ * For '&', then Math()
+ */
+void Concatenation() : {}
+{
+        Math() ( <CONCAT> Math() #Concat(2) )*
 }
 
 /*
@@ -258,12 +303,10 @@ void ValueSuffix() : {}
  * DotSuffix
  * Dot Property and Dot Method
  */
-void DotSuffix() #DotSuffix : { Token t = null; }
+void DotSuffix() #DotSuffix : {  Token t = null; }
 {
         <DOT> t=<IDENTIFIER> { jjtThis.setImage(t.image); }
-        ( (<LPAREN> (Expression() (<COMMA> Expression())*)? <RPAREN> )
-            #MethodArguments
-        )?
+        (MethodArguments())?
 }
 
 /*
@@ -273,9 +316,29 @@ void DotSuffix() #DotSuffix : { Token t = null; }
 void BracketSuffix() #BracketSuffix : {}
 {
 	<LBRACK> Expression() <RBRACK>
-        ( (<LPAREN> (Expression() (<COMMA> Expression())*)? <RPAREN> )
-            #MethodArguments
-        )?
+        (MethodArguments())?
+}
+
+
+/*
+ * MethodArguments
+ */
+void MethodArguments() #MethodArguments : {}
+{
+        <LPAREN> (Expression() (<COMMA> Expression())*)? <RPAREN>
+}
+
+/*
+ * Parenthesized Lambda Expression, with optional invokation
+ */
+void LambdaExpressionOrCall() #LambdaExpression : {}
+
+{
+    <LPAREN>
+        LambdaParameters() <ARROW>
+        (LOOKAHEAD(3) LambdaExpression() | Choice() )
+    <RPAREN>
+    (MethodArguments())*
 }
 
 /*
@@ -284,9 +347,31 @@ void BracketSuffix() #BracketSuffix : {}
  */
 void NonLiteral() : {}
 {
- 	<LPAREN> Expression() <RPAREN>
+        LOOKAHEAD(4) LambdaExpressionOrCall()
+ 	| <LPAREN> Expression() <RPAREN>
  	| LOOKAHEAD(4) Function()
 	| Identifier()
+        | MapData()
+        | ListData()
+}
+
+void MapData() #MapData: {}
+{
+    <START_MAP>
+        ( MapEntry() ( <COMMA> MapEntry() )* )?
+    <RCURL>
+}
+
+void MapEntry() #MapEntry: {}
+{
+    Expression() (<COLON> Expression())?
+}
+
+void ListData() #ListData: {}
+{
+    <LBRACK>
+        ( Expression() ( <COMMA> Expression() )* )?
+    <RBRACK>
 }
 
 /*
@@ -317,7 +402,7 @@ void Function() #Function :
 			jjtThis.setLocalName(t0.image);
 		}
 	}
-	<LPAREN> (Expression() (<COMMA> Expression())*)? <RPAREN>
+        (MethodArguments())+
 }
 
 
@@ -381,31 +466,39 @@ void Null() #Null : {}
 }
 
 
-/* ==================================================================================== */
+/* ========================================================================== */
+TOKEN_MGR_DECLS:
+{
+    java.util.Stack<Integer> stack = new java.util.Stack<Integer>();
+}
+
 <DEFAULT> TOKEN :
 {
   < LITERAL_EXPRESSION:
     ((~["\\", "$", "#"])
       | ("\\" ("\\" | "$" | "#"))
-      | ("$" ~["{", "$"])
-      | ("#" ~["{", "#"])
+      | ("$" ~["{", "$", "#"])
+      | ("#" ~["{", "$", "#"])
     )+
     | "$"
     | "#"
   >
 |
-  < START_DYNAMIC_EXPRESSION: "${" > : IN_EXPRESSION
+  < START_DYNAMIC_EXPRESSION: "${" > {stack.push(DEFAULT);}: IN_EXPRESSION
 |
-  < START_DEFERRED_EXPRESSION: "#{" > : IN_EXPRESSION
+  < START_DEFERRED_EXPRESSION: "#{" > {stack.push(DEFAULT);}: IN_EXPRESSION
 }
 
 <DEFAULT> SKIP : { "\\" }
 
-<IN_EXPRESSION> SKIP : { " " | "\t" | "\n" | "\r" }
+<IN_EXPRESSION, IN_MAP> SKIP:
+{ " " | "\t" | "\n" | "\r" }
 
-<IN_EXPRESSION> TOKEN :
+<IN_EXPRESSION, IN_MAP> TOKEN :
 {
-	< INTEGER_LITERAL: ["0"-"9"] (["0"-"9"])* >
+        < START_MAP : "{" > {stack.push(curLexState);}: IN_MAP
+|       < RCURL: "}" > {SwitchTo(stack.pop());}
+|       < INTEGER_LITERAL: ["0"-"9"] (["0"-"9"])* >
 |	< FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? 
 		| "." (["0"-"9"])+ (<EXPONENT>)?
 		| (["0"-"9"])+ <EXPONENT>
@@ -422,7 +515,6 @@ void Null() #Null : {}
 |	< TRUE : "true" >
 |	< FALSE : "false" >
 |	< NULL : "null" >
-|	< END_EXPRESSION : "}" > : DEFAULT
 |	< DOT : "." >
 |	< LPAREN : "(" >
 |	< RPAREN : ")" >
@@ -430,6 +522,7 @@ void Null() #Null : {}
 |	< RBRACK : "]" >
 |	< COLON : ":" >
 |	< COMMA : "," >
+|       < SEMICOLON : ";" >
 |	< GT0 : ">" >
 |	< GT1 : "gt" >
 |	< LT0 : "<" >
@@ -458,6 +551,9 @@ void Null() #Null : {}
 |	< DIV1 : "div" >
 |	< MOD0 : "%" >
 |	< MOD1 : "mod" >
+|       < CONCAT : "+=" >
+|       < ASSIGN : "=" >
+|       < ARROW : "->" >
 |	< IDENTIFIER : (<LETTER>|<IMPL_OBJ_START>) (<LETTER>|<DIGIT>)* >
 |	< #IMPL_OBJ_START: "#" >
 |	< #LETTER:
@@ -498,3 +594,4 @@ void Null() #Null : {}
 	>
 |	< ILLEGAL_CHARACTER: (~[]) >
 }
+

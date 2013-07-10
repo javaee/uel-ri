@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,8 +47,10 @@ import javax.el.ELException;
 import javax.el.ELResolver;
 import javax.el.MethodInfo;
 import javax.el.ValueReference;
+import javax.el.ELClass;
 import javax.el.PropertyNotFoundException;
 import javax.el.PropertyNotWritableException;
+import javax.el.ImportHandler;
 
 import com.sun.el.lang.EvaluationContext;
 import com.sun.el.lang.ELSupport;
@@ -125,7 +127,7 @@ public final class AstValue extends SimpleNode {
             // This is a method call
             if (! (property instanceof String)) {
                 throw new ELException(MessageFactory.get(
-                    "error.method.name", property.getClass()));
+                    "error.method.name", property));
             }
             Class<?>[] paramTypes = args.getParamTypes();
             Object[] params = args.getParameters(ctx);
@@ -144,9 +146,28 @@ public final class AstValue extends SimpleNode {
         return value;
     }
 
+    private final Object getBase(EvaluationContext ctx) {
+        try {
+            return this.children[0].getValue(ctx);
+        } catch (PropertyNotFoundException ex) {
+            // Next check if the base is an imported class
+            if (this.children[0] instanceof AstIdentifier) {
+                String name = ((AstIdentifier) this.children[0]).image;
+                ImportHandler importHandler = ctx.getImportHandler();
+                if (importHandler != null) {
+                    Class<?> c = importHandler.resolveClass(name);
+                    if (c != null) {
+                        return new ELClass(c);
+                    }
+                }
+            }
+            throw ex;
+        }
+    }
+
     private final Target getTarget(EvaluationContext ctx) throws ELException {
         // evaluate expr-a to value-a
-        Object base = this.children[0].getValue(ctx);
+        Object base = getBase(ctx);
 
         // if our base is null (we know there are more properites to evaluate)
         if (base == null) {
@@ -176,7 +197,7 @@ public final class AstValue extends SimpleNode {
     }
 
     public Object getValue(EvaluationContext ctx) throws ELException {
-        Object base = this.children[0].getValue(ctx);
+        Object base = getBase(ctx);
         int propCount = this.jjtGetNumChildren();
         int i = 1;
         while (base != null && i < propCount) {
@@ -210,10 +231,10 @@ public final class AstValue extends SimpleNode {
         Object property = t.suffixNode.getValue(ctx);
         ctx.setPropertyResolved(false);
         ELResolver elResolver = ctx.getELResolver();
-        Class<?> targetClass = elResolver.getType(ctx, t.base, property);
-        if (value != null || targetClass.isPrimitive()) {
-            value = ELSupport.coerceToType(value, targetClass);
-        }
+        
+        value = ctx.convertToType(value,
+                        elResolver.getType(ctx, t.base, property));
+
         elResolver.setValue(ctx, t.base, property, value);
         if (! ctx.isPropertyResolved()) {
             ELSupport.throwUnhandled(t.base, property);

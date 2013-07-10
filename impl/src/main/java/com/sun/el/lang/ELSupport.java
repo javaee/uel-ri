@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import java.beans.PropertyEditorManager;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.PropertyNotFoundException;
 
@@ -54,6 +55,7 @@ import com.sun.el.util.MessageFactory;
  * A helper class that implements the EL Specification
  * 
  * @author Jacob Hookom [jacob@hookom.net]
+ * @author Kin-man Chung
  * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: kchung $
  */
 public class ELSupport {
@@ -72,9 +74,9 @@ public class ELSupport {
     }
 
     /**
-     * @param obj0
-     * @param obj1
-     * @return
+     * @param obj0 First object to be compared
+     * @param obj1 Second object to be compared
+     * @return The result (an int with values -1, 0, or 1) of the comparison
      * @throws EvaluationException
      */
     public final static int compare(final Object obj0, final Object obj1)
@@ -121,9 +123,9 @@ public class ELSupport {
     }
 
     /**
-     * @param obj0
-     * @param obj1
-     * @return
+     * @param obj0 Fisrt object to be compared
+     * @param obj1 Second object to be compared
+     * @return true if the objects compared equal
      * @throws EvaluationException
      */
     public final static boolean equals(final Object obj0, final Object obj1)
@@ -171,8 +173,8 @@ public class ELSupport {
     }
 
     /**
-     * @param obj
-     * @return
+     * @param obj Object to be coerced
+     * @return The result of coercion
      */
     public final static Boolean coerceToBoolean(final Object obj)
             throws IllegalArgumentException {
@@ -341,8 +343,8 @@ public class ELSupport {
     }
 
     /**
-     * @param obj
-     * @return
+     * @param obj Object to be coerced
+     * @return The result of coercion
      */
     public final static String coerceToString(final Object obj) {
         if (obj == null) {
@@ -381,6 +383,12 @@ public class ELSupport {
                 (obj != null && type.isAssignableFrom(obj.getClass()))) {
             return obj;
         }
+
+        // new to EL 3.0
+        if (obj == null && !type.isPrimitive() && !String.class.equals(type)) {
+            return null;
+        }
+
         if (String.class.equals(type)) {
             return coerceToString(obj);
         }
@@ -397,9 +405,6 @@ public class ELSupport {
             return coerceToEnum(obj, type);
         }
 
-        // new to spec
-        if (obj == null)
-            return null;
         if (obj instanceof String) {
             if ("".equals(obj))
                 return null;
@@ -414,8 +419,8 @@ public class ELSupport {
     }
 
     /**
-     * @param obj
-     * @return
+     * @param obj An array of objects
+     * @return true if the array contains a null, false otherwise
      */
     public final static boolean containsNulls(final Object[] obj) {
         for (int i = 0; i < obj.length; i++) {

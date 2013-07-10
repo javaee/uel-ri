@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,7 @@ import javax.el.PropertyNotWritableException;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 import javax.el.ValueReference;
+import javax.el.EvaluationListener;
 
 import com.sun.el.lang.ELSupport;
 import com.sun.el.lang.EvaluationContext;
@@ -178,7 +179,7 @@ public final class ValueExpressionImpl extends ValueExpression implements
     }
 
     /**
-     * @return
+     * @return The Node for the expression
      * @throws ELException
      */
     private Node getNode() throws ELException {
@@ -221,14 +222,16 @@ public final class ValueExpressionImpl extends ValueExpression implements
             ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
                 this.varMapper);
+        ctx.notifyBeforeEvaluation(this.expr);
         Object value = this.getNode().getValue(ctx);
         if (this.expectedType != null) {
             try {
-                value = ELSupport.coerceToType(value, this.expectedType);
+                value = context.convertToType(value, this.expectedType);
             } catch (IllegalArgumentException ex) {
                 throw new ELException(ex);
             }
         }
+        ctx.notifyAfterEvaluation(this.expr);
         return value;
     }
 

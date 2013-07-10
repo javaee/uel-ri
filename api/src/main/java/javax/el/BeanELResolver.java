@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -179,7 +179,7 @@ public class BeanELResolver extends ELResolver {
     /*
      * Defines a property for a bean.
      */
-    protected final static class BeanProperty {
+    final static class BeanProperty {
 
         private Method readMethod;
         private Method writeMethod;
@@ -212,7 +212,7 @@ public class BeanELResolver extends ELResolver {
     /*
      * Defines the properties for a bean.
      */
-    protected final static class BeanProperties {
+    final static class BeanProperties {
 
         private final Map<String, BeanProperty> propertyMap =
             new HashMap<String, BeanProperty>();
@@ -361,7 +361,7 @@ public class BeanELResolver extends ELResolver {
         Object value;
         try {
             value = method.invoke(base, new Object[0]);
-            context.setPropertyResolved(true);
+            context.setPropertyResolved(base, property);
         } catch (ELException ex) {
             throw ex;
         } catch (InvocationTargetException ite) {
@@ -440,7 +440,7 @@ public class BeanELResolver extends ELResolver {
 
         try {
             method.invoke(base, new Object[] {val});
-            context.setPropertyResolved(true);
+            context.setPropertyResolved(base, property);
         } catch (ELException ex) {
             throw ex;
         } catch (InvocationTargetException ite) {
@@ -486,7 +486,7 @@ public class BeanELResolver extends ELResolver {
      * Note the resolution for overloaded methods will likely be clarified
      * in a future version of the spec.
      *
-     * The provide parameters are coerced to the correcponding parameter
+     * The provide parameters are coerced to the corresponding parameter
      * types of the method, and the method is then invoked.
      *
      * @param context The context of this evaluation.
@@ -524,9 +524,17 @@ public class BeanELResolver extends ELResolver {
         if (base == null || method == null) {
             return null;
         }
-        Method m = findMethod(base, method.toString(), paramTypes, params);
-        Object ret = invokeMethod(m, base, params);
-        context.setPropertyResolved(true);
+        Method m = ELUtil.findMethod(base.getClass(), method.toString(),
+                                    paramTypes,params, false);
+        for (Object p: params) {
+            // If the parameters is a LambdaExpression, set the ELContext
+            // for its evaluation
+            if (p instanceof javax.el.LambdaExpression) {
+                ((javax.el.LambdaExpression) p).setELContext(context);
+            }
+        }
+        Object ret = ELUtil.invokeMethod(context, m, base, params);
+        context.setPropertyResolved(base, method);
         return ret;
     }
 
@@ -726,62 +734,6 @@ public class BeanELResolver extends ELResolver {
                                            property}));
         }
         return bp;
-    }
-
-    private Method findMethod(Object base, String method,
-                              Class<?>[] paramTypes, Object[] params) {
-
-        Class<?>beanClass = base.getClass();
-        if (paramTypes != null) {
-            try {
-                return beanClass.getMethod(method, paramTypes);
-            } catch (java.lang.NoSuchMethodException ex) {
-                throw new MethodNotFoundException(ex);
-            }
-        }
-
-        int paramCount = (params == null)? 0: params.length;
-        for (Method m: base.getClass().getMethods()) {
-            if (m.getName().equals(method) && (
-                         m.isVarArgs() ||
-                         m.getParameterTypes().length==paramCount)){
-                return m;
-            }
-        }
-        throw new MethodNotFoundException("Method " + method + " not found");
-    }
-
-    static private ExpressionFactory expressionFactory;
-    static private ExpressionFactory getExpressionFactory() {
-        if (expressionFactory == null) {
-            expressionFactory = ExpressionFactory.newInstance();
-        }
-        return expressionFactory;
-    }
-
-    private Object invokeMethod(Method m, Object base, Object[] params) {
-
-        Class[] parameterTypes = m.getParameterTypes();
-        Object[] parameters = null;
-        if (parameterTypes.length > 0) {
-            ExpressionFactory exprFactory = getExpressionFactory();
-            if (m.isVarArgs()) {
-                // TODO
-            } else {
-                parameters = new Object[parameterTypes.length];
-                for (int i = 0; i < parameterTypes.length; i++) {
-                    parameters[i] = exprFactory.coerceToType(params[i],
-                                                           parameterTypes[i]);
-                }
-            }
-        }
-        try {
-            return m.invoke(base, parameters);
-        } catch (IllegalAccessException iae) {
-            throw new ELException(iae);
-        } catch (InvocationTargetException ite) {
-            throw new ELException(ite.getCause());
-        }
     }
 }
 

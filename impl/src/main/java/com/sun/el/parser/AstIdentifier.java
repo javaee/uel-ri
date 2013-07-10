@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,14 +48,17 @@ import javax.el.MethodNotFoundException;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 import javax.el.ValueReference;
-import javax.el.PropertyNotFoundException;
+import javax.el.PropertyNotWritableException;
+import javax.el.ELClass;
 
 import com.sun.el.lang.EvaluationContext;
 import com.sun.el.lang.ELSupport;
+import com.sun.el.util.MessageFactory;
 
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
+ * @author Kin-man Chung
  * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: kchung $
  */
 public final class AstIdentifier extends SimpleNode {
@@ -63,7 +66,12 @@ public final class AstIdentifier extends SimpleNode {
         super(id);
     }
 
+    @Override
     public Class getType(EvaluationContext ctx) throws ELException {
+        // First check if this is a lambda argument
+        if (ctx.isLambdaArgument(this.image)) {
+            return Object.class;
+        }
         VariableMapper varMapper = ctx.getVariableMapper();
         if (varMapper != null) {
             ValueExpression expr = varMapper.resolveVariable(this.image);
@@ -91,7 +99,12 @@ public final class AstIdentifier extends SimpleNode {
         return new ValueReference(null, this.image);
     }
 
+    @Override
     public Object getValue(EvaluationContext ctx) throws ELException {
+        // First check if this is a lambda argument
+        if (ctx.isLambdaArgument(this.image)) {
+            return ctx.getLambdaArgument(this.image);
+        }
         VariableMapper varMapper = ctx.getVariableMapper();
         if (varMapper != null) {
             ValueExpression expr = varMapper.resolveVariable(this.image);
@@ -102,12 +115,24 @@ public final class AstIdentifier extends SimpleNode {
         ctx.setPropertyResolved(false);
         Object ret = ctx.getELResolver().getValue(ctx, null, this.image);
         if (! ctx.isPropertyResolved()) {
+            // Check if this is an imported static field
+            if (ctx.getImportHandler() != null) {
+                Class<?> c = ctx.getImportHandler().resolveStatic(this.image);
+                if (c != null) {
+                    return ctx.getELResolver().getValue(ctx, new ELClass(c),
+                                this.image);
+                }
+            }
             ELSupport.throwUnhandled(null, this.image);
         }
         return ret;
     }
 
     public boolean isReadOnly(EvaluationContext ctx) throws ELException {
+        // Lambda arguments are read only.
+        if (ctx.isLambdaArgument(this.image)) {
+            return true;
+        }
         VariableMapper varMapper = ctx.getVariableMapper();
         if (varMapper != null) {
             ValueExpression expr = varMapper.resolveVariable(this.image);
@@ -125,6 +150,12 @@ public final class AstIdentifier extends SimpleNode {
 
     public void setValue(EvaluationContext ctx, Object value)
             throws ELException {
+        // First check if this is a lambda argument
+        if (ctx.isLambdaArgument(this.image)) {
+            throw new PropertyNotWritableException(
+                    MessageFactory.get("error.lambda.parameter.readonly",
+                        this.image));
+        }
         VariableMapper varMapper = ctx.getVariableMapper();
         if (varMapper != null) {
             ValueExpression expr = varMapper.resolveVariable(this.image);
@@ -135,10 +166,6 @@ public final class AstIdentifier extends SimpleNode {
         }
         ctx.setPropertyResolved(false);
         ELResolver elResolver = ctx.getELResolver();
-        if (value != null) {
-            value = ELSupport.coerceToType(value,
-                        elResolver.getType(ctx, null, this.image));
-        }
         elResolver.setValue(ctx, null, this.image, value);
         if (! ctx.isPropertyResolved()) {
             ELSupport.throwUnhandled(null, this.image);
