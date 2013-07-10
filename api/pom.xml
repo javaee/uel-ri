@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,7 @@
     <parent>
         <groupId>net.java</groupId>
         <artifactId>jvnet-parent</artifactId>
-        <version>1</version>
+        <version>3</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -85,7 +85,7 @@
     <licenses>
         <license>
             <name>CDDL + GPLv2 with classpath exception</name>
-            <url>http://glassfish.dev.java.net/nonav/public/CDDL+GPL.html</url>
+            <url>https://glassfish.dev.java.net/nonav/public/CDDL+GPL.html</url>
             <distribution>repo</distribution>
             <comments>A business-friendly OSS license</comments>
         </license>
@@ -219,6 +219,23 @@
                     <arguments>${release.arguments}</arguments>
                 </configuration>                                                      
             </plugin>                    
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-remote-resources-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                  <execution>
+                    <goals>
+                      <goal>process</goal>
+                    </goals>
+                    <configuration>
+                      <resourceBundles>
+                        <resourceBundle>org.glassfish:legal:1.1</resourceBundle>
+                      </resourceBundles>
+                    </configuration>
+                  </execution>
+                </executions>
+            </plugin>
     	</plugins>
         <resources>
             <resource>
