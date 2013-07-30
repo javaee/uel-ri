@@ -1,8 +1,0 @@
-<FindBugsFilter>
-    <!--
-        This file is generated from Javacc
-    -->
-    <Match>
-        <Class name="com.sun.el.parser.SimpleCharStream"/>
-    </Match>
-</FindBugsFilter>

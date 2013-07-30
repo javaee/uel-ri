@@ -1,0 +1,17 @@
+<FindBugsFilter>
+    <Match>
+        <Class name="com.sun.el.parser.SimpleCharStream"/>
+    </Match>
+    <Match>
+        <Class name="com.sun.el.parser.ELParser"/>
+    </Match>
+    <Match>
+        <Class name="com.sun.el.parser.ELParserTokenManager"/>
+    </Match>
+    <Match>
+        <Class name="com.sun.el.parser.ELParserConstants"/>
+    </Match>
+    <Match>
+        <Class name="com.sun.el.parser.TokenMgrError"/>
+    </Match>
+</FindBugsFilter>

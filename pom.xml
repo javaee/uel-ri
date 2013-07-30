@@ -63,8 +63,8 @@
         <extensionName>javax.el</extensionName>
         <bundle.symbolicName>com.sun.el.javax.el</bundle.symbolicName>
         <vendorName>Oracle Corporation</vendorName>
-        <findbugs.version>2.3.2</findbugs.version>
-        <findbugs.exclude />
+        <findbugs.version>2.5.2</findbugs.version>
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
         <findbugs.threshold>High</findbugs.threshold>
         <tlda-license.url>http://hudson-sca.us.oracle.com/job/tlda-license/lastSuccessfulBuild/artifact</tlda-license.url>
     </properties>
