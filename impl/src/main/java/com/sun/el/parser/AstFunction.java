@@ -156,11 +156,10 @@ public final class AstFunction extends SimpleNode {
 
         FunctionMapper fnMapper = ctx.getFunctionMapper();
         
-        // quickly validate again for this request
-        if (fnMapper == null) {
-            throw new ELException(MessageFactory.get("error.fnMapper.null"));
+        Method m = null;
+        if (fnMapper != null) {
+            m = fnMapper.resolveFunction(this.prefix, this.localName);
         }
-        Method m = fnMapper.resolveFunction(this.prefix, this.localName);
         if (m == null) {
             if (this.prefix.length() == 0 && ctx.getImportHandler() != null) {
                 Class<?> c = null;;
@@ -182,6 +181,10 @@ public final class AstFunction extends SimpleNode {
                     return ctx.getELResolver().invoke(ctx, new ELClass(c),
                                    methodName, null, params);
                 }
+            }
+            // quickly validate for this request
+            if (fnMapper == null) {
+                throw new ELException(MessageFactory.get("error.fnMapper.null"));
             }
             throw new ELException(MessageFactory.get("error.fnMapper.method",
                     this.getOutputName()));
