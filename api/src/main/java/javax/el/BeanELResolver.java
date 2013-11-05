@@ -526,6 +526,7 @@ public class BeanELResolver extends ELResolver {
         }
         Method m = ELUtil.findMethod(base.getClass(), method.toString(),
                                     paramTypes,params, false);
+        m = getMethod(base.getClass(), m);
         for (Object p: params) {
             // If the parameters is a LambdaExpression, set the ELContext
             // for its evaluation
