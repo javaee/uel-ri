@@ -231,9 +231,23 @@ public final class AstValue extends SimpleNode {
         Object property = t.suffixNode.getValue(ctx);
         ctx.setPropertyResolved(false);
         ELResolver elResolver = ctx.getELResolver();
-        
-        value = ctx.convertToType(value,
-                        elResolver.getType(ctx, t.base, property));
+
+        /* Note by kchung 10/2013
+         * The spec does not say if the value should be cocerced to the target
+         * type before setting the value to the target. The conversion is kept
+         * here to be backward compatible.
+         */
+        Class<?> targetType = elResolver.getType(ctx, t.base, property);
+        Object targetValue = elResolver.convertToType(ctx, value, targetType);
+
+        if (ctx.isPropertyResolved()) {
+            value = targetValue;
+        } else {
+            ctx.setPropertyResolved(false);
+            if (value != null || targetType.isPrimitive()) {
+                value = ELSupport.coerceToType(value, targetType);
+            }
+        }
 
         elResolver.setValue(ctx, t.base, property, value);
         if (! ctx.isPropertyResolved()) {
