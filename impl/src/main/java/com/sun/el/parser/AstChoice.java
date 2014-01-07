@@ -55,8 +55,9 @@ public final class AstChoice extends SimpleNode {
 
     public Class getType(EvaluationContext ctx)
             throws ELException {
-        Object val = this.getValue(ctx);
-        return (val != null) ? val.getClass() : null;
+        Object obj0 = this.children[0].getValue(ctx);
+        Boolean b0 = coerceToBoolean(obj0);
+        return this.children[((b0.booleanValue() ? 1 : 2))].getType(ctx);
     }
 
     public Object getValue(EvaluationContext ctx)
