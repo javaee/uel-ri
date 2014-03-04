@@ -90,8 +90,14 @@ class ELUtil {
     private ELUtil() {
     }
     
+/*  For testing Backward Compatibility option
+    static java.util.Properties properties = new java.util.Properties();
+    static {
+        properties.setProperty("javax.el.bc2.2", "true");
+    }
+*/
     public static ExpressionFactory exprFactory =
-        ExpressionFactory.newInstance();
+        ExpressionFactory.newInstance(/*properties*/);
 
     /**
      * <p>The <code>ThreadLocal</code> variable used to record the

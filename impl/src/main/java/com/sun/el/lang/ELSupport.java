@@ -379,13 +379,20 @@ public class ELSupport {
 
     public final static Object coerceToType(final Object obj, final Class<?> type)
             throws IllegalArgumentException {
+        return coerceToType(obj, type, false);
+    }
+
+    public final static Object coerceToType(final Object obj, final Class<?> type,
+                                            boolean isEL22Compatible)
+            throws IllegalArgumentException {
+
         if (type == null || Object.class.equals(type) ||
                 (obj != null && type.isAssignableFrom(obj.getClass()))) {
             return obj;
         }
 
         // new to EL 3.0
-        if (obj == null && !type.isPrimitive() && !String.class.equals(type)) {
+        if (!isEL22Compatible && obj == null && !type.isPrimitive() && !String.class.equals(type)) {
             return null;
         }
 
