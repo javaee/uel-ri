@@ -356,12 +356,8 @@ public abstract class ExpressionFactory {
 
     /**
      * Retrieve a function map containing a pre-configured function
-     * mapping.  It must include the following functions.
-     * <ul>
-     * <li>linq:range</li>
-     * <li>linq:repeat</li>
-     * <li>linq:_empty</li>
-     * </ul>
+     * mapping.
+     *
      * @return A initial map for functions, null if there is none.
      *
      * @since EL 3.0

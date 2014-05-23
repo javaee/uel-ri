@@ -52,6 +52,7 @@ import javax.el.ELClass;
 
 import com.sun.el.lang.EvaluationContext;
 import com.sun.el.util.MessageFactory;
+import com.sun.el.lang.ELSupport;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
@@ -196,7 +197,8 @@ public final class AstFunction extends SimpleNode {
         Object result = null;
         for (int i = 0; i < params.length; i++) {
             try {
-                params[i] = ctx.convertToType(params[i], paramTypes[i]);
+                // XXX params[i] = ctx.convertToType(params[i], paramTypes[i]);
+                params[i] = ELSupport.convertToType(ctx, params[i], paramTypes[i]);
             } catch (ELException ele) {
                 throw new ELException(MessageFactory.get("error.function", this
                         .getOutputName()), ele);

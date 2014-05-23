@@ -71,18 +71,20 @@ public class ExpressionFactoryImpl extends ExpressionFactory {
      */
     public ExpressionFactoryImpl() {
         super();
+        setExpressionFactory(this);
     }
 
     public ExpressionFactoryImpl(Properties properties) {
         super();
         this.properties = properties;
+        this.isBackwardCompatible22 = "true".equals(getProperty("javax.el.bc2.2"));
+        setExpressionFactory(this);
     }
 
     public Object coerceToType(Object obj, Class type) {
         Object ret;
         try {
-            boolean compatible = "true".equals(getProperty("javax.el.bc2.2"));
-            ret = ELSupport.coerceToType(obj, type, compatible);
+            ret = ELSupport.coerceToType(obj, type, isBackwardCompatible22);
         } catch (IllegalArgumentException ex) {
             throw new ELException(ex);
         }
@@ -134,19 +136,24 @@ public class ExpressionFactoryImpl extends ExpressionFactory {
     @Override
     public Map<String, Method> getInitFunctionMap() {
         Map<String, Method> funcs = new HashMap<String, Method>();
-/*
-        Class<Generation> genClass = Generation.class;
-        try {
-            funcs.put("collections:range", genClass.getMethod("range",
-                    new Class<?>[] {Integer.TYPE, Integer.TYPE}));
-            funcs.put("collections:repeat", genClass.getMethod("repeat",
-                    new Class<?>[] {Object.class, Integer.TYPE}));
-        } catch (NoSuchMethodException ex) {
-            // Should not happen
-        }
-*/
         return funcs;
     }
 
     private Properties properties;
+    private boolean isBackwardCompatible22;
+
+    /** 
+     * XXX A temporary hack for getting a previous instance, until spec provide the need functionality.
+     */
+
+    private static ThreadLocal<ExpressionFactoryImpl> expressionFactory = new ThreadLocal<>();
+
+    public static void setExpressionFactory(ExpressionFactoryImpl expf) {
+        expressionFactory.set(expf);
+    }
+
+    public static ExpressionFactoryImpl getExpressionFactory() {
+        return expressionFactory.get();
+    }
+
 }
