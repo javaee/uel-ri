@@ -76,8 +76,7 @@ public final class ValueExpressionLiteral extends ValueExpression implements
     public Object getValue(ELContext context) {
         if (this.expectedType != null) {
             try {
-                // XXX return context.convertToType(this.value, this.expectedType);
-                return ELSupport.convertToType(context, this.value, this.expectedType);
+                return context.convertToType(this.value, this.expectedType);
             } catch (IllegalArgumentException ex) {
                 throw new ELException(ex);
             }

@@ -81,8 +81,7 @@ public class MethodExpressionLiteral extends MethodExpression implements Externa
         }
 
         try {
-            // XXX return context.convertToType(this.expr, this.expectedType);
-            return ELSupport.convertToType(context, this.expr, this.expectedType);
+            return context.convertToType(this.expr, this.expectedType);
         } catch (Exception ex) {
             throw new ELException (ex);
         }

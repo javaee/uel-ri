@@ -46,11 +46,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import javax.el.ELContext;
-import javax.el.ELResolver;
 import javax.el.ELException;
 import javax.el.PropertyNotFoundException;
 
-import com.sun.el.ExpressionFactoryImpl;
 import com.sun.el.util.MessageFactory;
 
 /**
@@ -523,31 +521,4 @@ public class ELSupport {
     public ELSupport() {
         super();
     }
-
-    /** XXX
-     * A temporary replacement for EL.converToType until the spec is fixed to allow gettiing ExpressionFactory
-     * properties.
-     */
-    public static Object convertToType(ELContext ctxt, Object obj, Class<?> targetType) {
-
-        boolean propertyResolvedSave = ctxt.isPropertyResolved();
-        try {
-            ctxt.setPropertyResolved(false);
-            ELResolver elResolver = ctxt.getELResolver();
-            if (elResolver != null) {
-                Object res = elResolver.convertToType(ctxt, obj, targetType);
-                if (ctxt.isPropertyResolved()) {
-                    return res;
-                }
-            }
-        } catch (ELException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new ELException(ex);
-        } finally {
-            ctxt.setPropertyResolved(propertyResolvedSave);
-        }
-        return ExpressionFactoryImpl.getExpressionFactory().coerceToType(obj, targetType);
-    }
-
 }
