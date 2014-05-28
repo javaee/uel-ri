@@ -470,7 +470,12 @@ public abstract class ELContext {
         } finally {
             setPropertyResolved(propertyResolvedSave);
         }
-        return ELUtil.getExpressionFactory().coerceToType(obj, targetType);
+
+        ExpressionFactory exprFactory = (ExpressionFactory)getContext(ExpressionFactory.class);
+        if (exprFactory == null) {
+            exprFactory = ELUtil.getExpressionFactory();
+        }
+        return exprFactory.coerceToType(obj, targetType);
     }
 
     private boolean resolved;
