@@ -279,7 +279,7 @@ public class ResourceBundleELResolver extends ELResolver {
      *         representing a key in this bundle, or <code>null</code> if the
      *         base object is not a ResourceBundle.
      */
-    public Iterator getFeatureDescriptors(ELContext context, Object base) {
+    public Iterator<FeatureDescriptor> getFeatureDescriptors(ELContext context, Object base) {
         if (base instanceof ResourceBundle) {
             ResourceBundle bundle = (ResourceBundle) base;
             List<FeatureDescriptor> features = new ArrayList<FeatureDescriptor>();
