@@ -229,7 +229,6 @@ public final class AstValue extends SimpleNode {
                         MessageFactory.get("error.syntax.set"));
         }
         Object property = t.suffixNode.getValue(ctx);
-        ctx.setPropertyResolved(false);
         ELResolver elResolver = ctx.getELResolver();
 
         /* Note by kchung 10/2013
@@ -237,18 +236,22 @@ public final class AstValue extends SimpleNode {
          * type before setting the value to the target. The conversion is kept
          * here to be backward compatible.
          */
+        ctx.setPropertyResolved(false);
         Class<?> targetType = elResolver.getType(ctx, t.base, property);
-        Object targetValue = elResolver.convertToType(ctx, value, targetType);
-
         if (ctx.isPropertyResolved()) {
-            value = targetValue;
-        } else {
             ctx.setPropertyResolved(false);
-            if (value != null || targetType.isPrimitive()) {
-                value = ELSupport.coerceToType(value, targetType);
+            Object targetValue = elResolver.convertToType(ctx, value, targetType);
+
+            if (ctx.isPropertyResolved()) {
+                value = targetValue;
+            } else {
+                if (value != null || targetType.isPrimitive()) {
+                    value = ELSupport.coerceToType(value, targetType);
+                }
             }
         }
 
+        ctx.setPropertyResolved(false);
         elResolver.setValue(ctx, t.base, property, value);
         if (! ctx.isPropertyResolved()) {
             ELSupport.throwUnhandled(t.base, property);
