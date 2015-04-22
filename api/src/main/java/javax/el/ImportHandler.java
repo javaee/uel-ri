@@ -173,7 +173,7 @@ public class ImportHandler {
     private Class<?> getClassFor(String className) {
         if (!notAClass.contains(className)) {
             try {
-                return Class.forName(className, false, getClass().getClassLoader());
+                return Class.forName(className, false, Thread.currentThread().getContextClassLoader());
             } catch (ClassNotFoundException ex) {
                 notAClass.add(className);
             }

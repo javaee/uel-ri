@@ -40,7 +40,6 @@
 
 package com.sun.el.parser;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.el.ELException;
@@ -265,7 +264,7 @@ public final class AstValue extends SimpleNode {
             return null;
         }
         Object property = t.suffixNode.getValue(ctx);
-        Method m = ReflectionUtil.getMethod(t.base, property, paramTypes);
+        Method m = ReflectionUtil.findMethod(t.base.getClass(), property.toString(), paramTypes, null);
         return new MethodInfo(m.getName(), m.getReturnType(), m
                 .getParameterTypes());
     }
@@ -286,16 +285,8 @@ public final class AstValue extends SimpleNode {
             return resolver.invoke(ctx, t.base, method, paramTypes, params);
         }
         Object property = t.suffixNode.getValue(ctx);
-        Method m = ReflectionUtil.getMethod(t.base, property, paramTypes);
-        Object result = null;
-        try {
-            result = m.invoke(t.base, (Object[]) paramValues);
-        } catch (IllegalAccessException iae) {
-            throw new ELException(iae);
-        } catch (InvocationTargetException ite) {
-            throw new ELException(ite.getCause());
-        }
-        return result;
+        Method m = ReflectionUtil.findMethod(t.base.getClass(), property.toString(), paramTypes, paramValues);
+        return ReflectionUtil.invokeMethod(ctx, m, t.base, paramValues);
     }
 
     @Override

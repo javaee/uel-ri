@@ -60,7 +60,6 @@ package javax.el;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.ref.SoftReference;
 import java.lang.ref.ReferenceQueue;
 import java.beans.FeatureDescriptor;
@@ -188,8 +187,8 @@ public class BeanELResolver extends ELResolver {
         public BeanProperty(Class<?> baseClass,
                             PropertyDescriptor descriptor) {
             this.descriptor = descriptor;
-            readMethod = getMethod(baseClass, descriptor.getReadMethod());
-            writeMethod = getMethod(baseClass, descriptor.getWriteMethod());
+            readMethod = ELUtil.getMethod(baseClass, descriptor.getReadMethod());
+            writeMethod = ELUtil.getMethod(baseClass, descriptor.getWriteMethod());
         }
                                                                                 
         public Class getPropertyType() {
@@ -526,7 +525,6 @@ public class BeanELResolver extends ELResolver {
         }
         Method m = ELUtil.findMethod(base.getClass(), method.toString(),
                                     paramTypes,params, false);
-        m = getMethod(base.getClass(), m);
         for (Object p: params) {
             // If the parameters is a LambdaExpression, set the ELContext
             // for its evaluation
@@ -670,49 +668,6 @@ public class BeanELResolver extends ELResolver {
         }
 
         return Object.class;
-    }
-
-    /*
-     * Get a public method form a public class or interface of a given method.
-     * Note that if a PropertyDescriptor is obtained for a non-public class that
-     * implements a public interface, the read/write methods will be for the
-     * class, and therefore inaccessible.  To correct this, a version of the
-     * same method must be found in a superclass or interface.
-     **/
-
-    static private Method getMethod(Class<?> cl, Method method) {
-
-        if (method == null) {
-            return null;
-        }
-
-        if (Modifier.isPublic (cl.getModifiers ())) {
-            return method;
-        }
-        Class<?> [] interfaces = cl.getInterfaces ();
-        for (int i = 0; i < interfaces.length; i++) {
-            Class<?> c = interfaces[i];
-            Method m = null;
-            try {
-                m = c.getMethod(method.getName(), method.getParameterTypes());
-                c = m.getDeclaringClass();
-                if ((m = getMethod(c, m)) != null)
-                    return m;
-            } catch (NoSuchMethodException ex) {
-            }
-        }
-        Class<?> c = cl.getSuperclass();
-        if (c != null) {
-            Method m = null;
-            try {
-                m = c.getMethod(method.getName(), method.getParameterTypes());
-                c = m.getDeclaringClass();
-                if ((m = getMethod(c, m)) != null)
-                    return m;
-            } catch (NoSuchMethodException ex) {
-            }
-        }
-        return null;
     }
 
     private BeanProperty getBeanProperty(ELContext context,
