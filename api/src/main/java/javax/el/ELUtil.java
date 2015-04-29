@@ -381,24 +381,28 @@ class ELUtil {
             boolean noMatch = false;
             for (int i = 0; i < mParamCount; i++) {
                 if (i == (mParamCount - 1) && w.isVarArgs()) {
-                    if (paramValues == null) {
-                        noMatch = true;
-                        break;
-                    } 
+                    varArgs = true;
+                    // exact var array type match
+                    if (mParamCount == paramCount) {
+                        if (mParamTypes[i] == paramTypes[i]) {
+                            continue;
+                        }
+                    }
                     
+                    // unwrap the array's component type
                     Class<?> varType = mParamTypes[i].getComponentType();
                     for (int j = i; j < paramCount; j++) {
-                        if (!isAssignableFrom(paramTypes[j], varType) && !isCoercibleFrom(paramValues[j], varType)) {
+                        if (!isAssignableFrom(paramTypes[j], varType) 
+                                && !(paramValues != null && j < paramValues.length && isCoercibleFrom(paramValues[j], varType))) {
                             noMatch = true;
                             break;
                         }
                     }
-                    varArgs = true;
                 } else if (mParamTypes[i].equals(paramTypes[i])) {
                 } else if (isAssignableFrom(paramTypes[i], mParamTypes[i])) {
                     assignable = true;
                 } else {
-                    if (paramValues == null) {
+                    if (paramValues == null || i >= paramValues.length) {
                         noMatch = true;
                         break;
                     } else {
@@ -661,7 +665,7 @@ class ELUtil {
         //       be required to avoid the exception.
         try {
             getExpressionFactory().coerceToType(src, target);
-        } catch (ELException e) {
+        } catch (Exception e) {
             return false;
         }
         return true;
@@ -764,28 +768,32 @@ class ELUtil {
         Object[] parameters = null;
         if (parameterTypes.length > 0) {
             parameters = new Object[parameterTypes.length];
-            int paramCount = params.length;
+            int paramCount = params == null ? 0 : params.length;
             if (isVarArgs) {
                 int varArgIndex = parameterTypes.length - 1;
                 // First argCount-1 parameters are standard
-                for (int i = 0; (i < varArgIndex); i++) {
+                for (int i = 0; (i < varArgIndex && i < paramCount); i++) {
                     parameters[i] = context.convertToType(params[i],
                             parameterTypes[i]);
                 }
                 // Last parameter is the varargs
-                Class<?> varArgClass =
-                        parameterTypes[varArgIndex].getComponentType();
-                final Object varargs = Array.newInstance(
-                        varArgClass,
-                        (paramCount - varArgIndex));
-                for (int i = (varArgIndex); i < paramCount; i++) {
-                    Array.set(varargs, i - varArgIndex,
-                            context.convertToType(params[i], varArgClass));
+                if (parameterTypes.length == paramCount 
+                        && parameterTypes[varArgIndex] == params[varArgIndex].getClass()) {
+                    parameters[varArgIndex] = params[varArgIndex];
+                } else {
+                    Class<?> varArgClass =
+                            parameterTypes[varArgIndex].getComponentType();
+                    final Object varargs = Array.newInstance(
+                            varArgClass,
+                            (paramCount - varArgIndex));
+                    for (int i = (varArgIndex); i < paramCount; i++) {
+                        Array.set(varargs, i - varArgIndex,
+                                context.convertToType(params[i], varArgClass));
+                    }
+                    parameters[varArgIndex] = varargs;
                 }
-                parameters[varArgIndex] = varargs;
             } else {
-                parameters = new Object[parameterTypes.length];
-                for (int i = 0; i < parameterTypes.length; i++) {
+                for (int i = 0; i < parameterTypes.length && i < paramCount; i++) {
                     parameters[i] = context.convertToType(params[i],
                             parameterTypes[i]);
                 }

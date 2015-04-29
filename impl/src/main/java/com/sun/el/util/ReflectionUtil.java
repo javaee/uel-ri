@@ -169,7 +169,7 @@ public class ReflectionUtil {
     }
 
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     public static Object invokeMethod(ELContext context,
@@ -189,7 +189,7 @@ public class ReflectionUtil {
     }
     
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     public static Method findMethod(Class<?> clazz, String methodName,
@@ -218,7 +218,7 @@ public class ReflectionUtil {
     }
 
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private static Wrapper findWrapper(Class<?> clazz, List<Wrapper> wrappers,
@@ -258,24 +258,28 @@ public class ReflectionUtil {
             boolean noMatch = false;
             for (int i = 0; i < mParamCount; i++) {
                 if (i == (mParamCount - 1) && w.isVarArgs()) {
-                    if (paramValues == null) {
-                        noMatch = true;
-                        break;
-                    } 
+                    varArgs = true;
+                    // exact var array type match
+                    if (mParamCount == paramCount) {
+                        if (mParamTypes[i] == paramTypes[i]) {
+                            continue;
+                        }
+                    }
                     
+                    // unwrap the array's component type
                     Class<?> varType = mParamTypes[i].getComponentType();
                     for (int j = i; j < paramCount; j++) {
-                        if (!isAssignableFrom(paramTypes[j], varType) && !isCoercibleFrom(paramValues[j], varType)) {
+                        if (!isAssignableFrom(paramTypes[j], varType) 
+                                && !(paramValues != null && j < paramValues.length && isCoercibleFrom(paramValues[j], varType))) {
                             noMatch = true;
                             break;
                         }
                     }
-                    varArgs = true;
                 } else if (mParamTypes[i].equals(paramTypes[i])) {
                 } else if (isAssignableFrom(paramTypes[i], mParamTypes[i])) {
                     assignable = true;
                 } else {
-                    if (paramValues == null) {
+                    if (paramValues == null  || i >= paramValues.length) {
                         noMatch = true;
                         break;
                     } else {
@@ -322,7 +326,7 @@ public class ReflectionUtil {
     }
     
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private static Wrapper findMostSpecificWrapper(List<Wrapper> candidates, 
@@ -354,7 +358,7 @@ public class ReflectionUtil {
     }
     
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private static int isMoreSpecific(Wrapper wrapper1, Wrapper wrapper2, 
@@ -407,7 +411,7 @@ public class ReflectionUtil {
     }
     
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private static int isMoreSpecific(Class<?> type1, Class<?> type2, Class<?> matchingType, boolean elSpecific) {
@@ -446,7 +450,7 @@ public class ReflectionUtil {
     }
     
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private static Class<?> getBoxingTypeIfPrimitive(Class<?> clazz) {
@@ -475,7 +479,7 @@ public class ReflectionUtil {
     }
     
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private static Class<?>[] getComparingParamTypesForVarArgsMethod(Class<?>[] paramTypes, int length) {
@@ -490,7 +494,7 @@ public class ReflectionUtil {
     }
 
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private static final String paramString(Class<?>[] types) {
@@ -512,7 +516,7 @@ public class ReflectionUtil {
     }
 
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     static boolean isAssignableFrom(Class<?> src, Class<?> target) {
@@ -530,7 +534,7 @@ public class ReflectionUtil {
 
 
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private static boolean isCoercibleFrom(Object src, Class<?> target) {
@@ -538,14 +542,14 @@ public class ReflectionUtil {
         //       be required to avoid the exception.
         try {
             ELSupport.coerceToType(src, target);
-        } catch (ELException e) {
+        } catch (Exception e) {
             return false;
         }
         return true;
     }
 
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private static Class<?>[] getTypesFromValues(Object[] values) {
@@ -566,7 +570,7 @@ public class ReflectionUtil {
 
 
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      * 
      * Get a public method form a public class or interface of a given method.
@@ -609,7 +613,7 @@ public class ReflectionUtil {
     }
     
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     static Constructor<?> getConstructor(Class<?> type, Constructor<?> c) {
@@ -633,7 +637,7 @@ public class ReflectionUtil {
     }
     
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     static Object[] buildParameters(ELContext context, Class<?>[] parameterTypes,
@@ -641,28 +645,32 @@ public class ReflectionUtil {
         Object[] parameters = null;
         if (parameterTypes.length > 0) {
             parameters = new Object[parameterTypes.length];
-            int paramCount = params.length;
+            int paramCount = params == null ? 0 : params.length;
             if (isVarArgs) {
                 int varArgIndex = parameterTypes.length - 1;
                 // First argCount-1 parameters are standard
-                for (int i = 0; (i < varArgIndex); i++) {
+                for (int i = 0; (i < varArgIndex && i < paramCount); i++) {
                     parameters[i] = context.convertToType(params[i],
                             parameterTypes[i]);
                 }
                 // Last parameter is the varargs
-                Class<?> varArgClass =
-                        parameterTypes[varArgIndex].getComponentType();
-                final Object varargs = Array.newInstance(
-                        varArgClass,
-                        (paramCount - varArgIndex));
-                for (int i = (varArgIndex); i < paramCount; i++) {
-                    Array.set(varargs, i - varArgIndex,
-                            context.convertToType(params[i], varArgClass));
+                if (parameterTypes.length == paramCount 
+                        && parameterTypes[varArgIndex] == params[varArgIndex].getClass()) {
+                    parameters[varArgIndex] = params[varArgIndex];
+                } else {
+                    Class<?> varArgClass =
+                            parameterTypes[varArgIndex].getComponentType();
+                    final Object varargs = Array.newInstance(
+                            varArgClass,
+                            (paramCount - varArgIndex));
+                    for (int i = (varArgIndex); i < paramCount; i++) {
+                        Array.set(varargs, i - varArgIndex,
+                                context.convertToType(params[i], varArgClass));
+                    }
+                    parameters[varArgIndex] = varargs;
                 }
-                parameters[varArgIndex] = varargs;
             } else {
-                parameters = new Object[parameterTypes.length];
-                for (int i = 0; i < parameterTypes.length; i++) {
+                for (int i = 0; i < parameterTypes.length && i < paramCount; i++) {
                     parameters[i] = context.convertToType(params[i],
                             parameterTypes[i]);
                 }
@@ -672,7 +680,7 @@ public class ReflectionUtil {
     }
     
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private abstract static class Wrapper {
@@ -702,7 +710,7 @@ public class ReflectionUtil {
     }
     
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private static class MethodWrapper extends Wrapper {
@@ -734,7 +742,7 @@ public class ReflectionUtil {
     }
     
     /*
-     * This method duplicates code in com.sun.el.util.ReflectionUtil. When
+     * This method duplicates code in javax.el.ELUtil. When
      * making changes keep the code in sync.
      */
     private static class ConstructorWrapper extends Wrapper {
