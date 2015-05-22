@@ -200,7 +200,9 @@ public class ELProcessor {
         }
         
         Method meth = null;
-        ClassLoader loader = getClass().getClassLoader();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        if(loader == null)
+            loader = getClass().getClassLoader();
         Class<?> klass = Class.forName(className, false, loader);
         int j = method.indexOf('(');
         if (j < 0) {
@@ -211,7 +213,7 @@ public class ELProcessor {
                 }
             }
             if (meth == null) {
-                throw new NoSuchMethodException();
+                throw new NoSuchMethodException("Bad method name: " + method);
             }
         } else {
             // method is the signature

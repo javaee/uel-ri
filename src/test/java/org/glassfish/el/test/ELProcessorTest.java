@@ -106,11 +106,22 @@ public class ELProcessorTest {
         assertTrue(caught);
         
         try {
-            elp.defineFunction("yy", "", "testBean", "getBar");
+            elp.defineFunction("yy", "", "org.glassfish.el.test.ELProcessorTest$MyBean", "getBar");
             Object ret = elp.eval("yy:getBar() == 64");
             assertTrue((Boolean)ret);
         } catch (ClassNotFoundException | NoSuchMethodException ex) {
+            
         }
+        
+        caught = false;
+        try {
+            elp.defineFunction("yy", "", "org.glassfish.el.test.ELProcessorTest$MyBean", "getFooBar");
+            Object ret = elp.eval("yy:getBar() == 100");
+            assertTrue((Boolean)ret);
+        } catch (ClassNotFoundException | NoSuchMethodException ex) {
+            caught = true;
+        }
+        assertTrue(caught);
         
         caught = false;
         try {
