@@ -91,9 +91,9 @@
         </mailingList>
     </mailingLists>
     <scm>
-        <connection>scm:svn:https://svn.java.net/svn/uel~svn/trunk/api</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/uel~svn/trunk/api</developerConnection>
-        <url>http://java.net/projects/uel/sources/svn/show</url>
+        <connection>scm:git:https://github.com/javaee/uel-ri.git</connection>
+        <developerConnection>scm:git:https://github.com/javaee/uel-ri.git</developerConnection>
+        <url>https://github.com/javaee/uel-ri</url>
     </scm>
 
     <developers>
