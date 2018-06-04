@@ -52,7 +52,7 @@
     <groupId>javax.el</groupId>
     <artifactId>javax.el-api</artifactId>
     <packaging>jar</packaging>
-    <version>3.0.1-b06-SNAPSHOT</version>
+    <version>3.0.1-b06</version>
     <name>Expression Language 3.0 API</name>
 
     <properties>
