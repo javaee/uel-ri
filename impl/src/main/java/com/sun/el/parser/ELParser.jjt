@@ -137,7 +137,7 @@ void SemiColon() : {}
  */
 void Assignment() : {}
 {
-        LOOKAHEAD(3) LambdaExpression() |
+        LOOKAHEAD(4) LambdaExpression() |
         Choice() (<ASSIGN> Assignment() #Assign(2) )?
 }
 
@@ -147,7 +147,7 @@ void Assignment() : {}
 void LambdaExpression() #LambdaExpression : {}
 {
        LambdaParameters() <ARROW>
-       (LOOKAHEAD(3) LambdaExpression() | Choice() )
+       (LOOKAHEAD(4) LambdaExpression() | Choice() )
 }
 
 void LambdaParameters() #LambdaParameters: {}
@@ -336,7 +336,7 @@ void LambdaExpressionOrCall() #LambdaExpression : {}
 {
     <LPAREN>
         LambdaParameters() <ARROW>
-        (LOOKAHEAD(3) LambdaExpression() | Choice() )
+        (LOOKAHEAD(4) LambdaExpression() | Choice() )
     <RPAREN>
     (MethodArguments())*
 }
